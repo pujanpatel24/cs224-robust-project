@@ -24,7 +24,7 @@ def backTranslate(translator, sentence, dest):
     return backward
 
 def augment_by_chunk(translator, lst):
-    step = 5000
+    step = 4999
     string = str(lst)
     aug = ""
     chunks = [string[i:i+step] for i in range(0, len(string), step)]
