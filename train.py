@@ -30,7 +30,7 @@ def augment_by_chunk(translator, lst):
     chunks = [string[i:i+step] for i in range(0, len(string), step)]
     for chunk in chunks:
         aug += backTranslate(translator, chunk, 'es')
-    return json.loads(aug)
+    return aug.strip('][').split(', ')
 
 def augment_data(dataset_dict_curr):
     translator = google_translator()
