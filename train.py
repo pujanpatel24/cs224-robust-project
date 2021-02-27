@@ -256,7 +256,10 @@ def main():
     args = get_train_test_args()
 
     util.set_seed(args.seed)
-    model = DistilBertForQuestionAnswering.from_pretrained("distilbert-base-uncased")
+    if args.model_path:
+        model = DistilBertForQuestionAnswering.from_pretrained(args.model)
+    else:
+        model = DistilBertForQuestionAnswering.from_pretrained('distilbert-base-uncased')
     tokenizer = DistilBertTokenizerFast.from_pretrained('distilbert-base-uncased')
 
     if args.do_train:
@@ -278,6 +281,12 @@ def main():
                                 batch_size=args.batch_size,
                                 sampler=SequentialSampler(val_dataset))
         best_scores = trainer.train(model, train_loader, val_loader, val_dict)
+
+    # if reinit_layers is > 0 then, we fine tune on OOD with reinitializing the top reinit_layers
+    if args.ood and args.reinit_layers:
+        for param in model.base_model.parameters():
+            continue
+
     if args.do_eval:
         args.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         split_name = 'test' if 'test' in args.eval_dir else 'validation'
