@@ -9,6 +9,7 @@ from transformers import DistilBertTokenizerFast
 from transformers import DistilBertForQuestionAnswering
 from transformers import AdamW
 from tensorboardX import SummaryWriter
+from google_trans_new import google_translator
 
 
 from torch.utils.data import DataLoader
@@ -16,6 +17,17 @@ from torch.utils.data.sampler import RandomSampler, SequentialSampler
 from args import get_train_test_args
 
 from tqdm import tqdm
+
+def backTranslate(translator, sentence, dest):
+    forward = translator.translate(sentence, lang_src='en', lang_tgt=dest)
+    backward = translator.translate(forward, lang_src=dest, lang_tgt='en')
+    return backward
+
+def augment_data(dataset_dict_curr):
+    for i in range(len(dataset_dict_curr['question'])):
+        dataset_dict_curr['question'][i] = backTranslate(translator, dataset_dict_curr['question'][i], 'es')
+        dataset_dict_curr['context'][i] = backTranslate(translator, dataset_dict_curr['context'][i], 'es')
+    return dataset_dict_curr
 
 def prepare_eval_data(dataset_dict, tokenizer):
     tokenized_examples = tokenizer(dataset_dict['question'],
@@ -248,6 +260,9 @@ def get_dataset(args, datasets, data_dir, tokenizer, split_name):
         dataset_name += f'_{dataset}'
         dataset_dict_curr = util.read_squad(f'{data_dir}/{dataset}')
         dataset_dict = util.merge(dataset_dict, dataset_dict_curr)
+        if args.augment_data:
+            aug_dict = augment_data(dataset_dict_curr)
+            dataset_dict = util.merge(dataset_dict, aug_dict)
     data_encodings = read_and_process(args, tokenizer, dataset_dict, data_dir, dataset_name, split_name)
     return util.QADataset(data_encodings, train=(split_name=='train')), dataset_dict
 
