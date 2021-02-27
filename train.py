@@ -258,7 +258,6 @@ def main():
     util.set_seed(args.seed)
     if args.model_path:
         model = DistilBertForQuestionAnswering.from_pretrained(args.model_path)
-        print(model)
     else:
         model = DistilBertForQuestionAnswering.from_pretrained('distilbert-base-uncased')
     tokenizer = DistilBertTokenizerFast.from_pretrained('distilbert-base-uncased')
@@ -284,7 +283,6 @@ def main():
         best_scores = trainer.train(model, train_loader, val_loader, val_dict)
 
     # if reinit_layers is > 0 then, we fine tune on OOD with reinitializing the top reinit_layers
-    print(args.do_finetune)
     if args.do_finetune:
         print('Finetuning model on OOD')
         if args.reinit_layers > 0:
