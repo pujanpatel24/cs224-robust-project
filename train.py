@@ -31,6 +31,8 @@ def augment_by_chunk(translator, lst):
     chunks = [string[i:i+step] for i in range(0, len(string), step)]
     for chunk in chunks:
         aug += backTranslate(translator, chunk, 'es')
+    print string
+    print aug
     return_list = aug.strip('][').split(', ')
     print(len(return_list))
     return return_list
