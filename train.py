@@ -24,13 +24,16 @@ def backTranslate(translator, sentence, dest):
     return backward
 
 def augment_by_chunk(translator, lst):
+    print(len(lst))
     step = 4999
     string = str(lst)
     aug = ""
     chunks = [string[i:i+step] for i in range(0, len(string), step)]
     for chunk in chunks:
         aug += backTranslate(translator, chunk, 'es')
-    return aug.strip('][').split(', ')
+    return_list = aug.strip('][').split(', ')
+    print(len(return_list))
+    return return_list
 
 def augment_data(dataset_dict_curr):
     translator = google_translator()
