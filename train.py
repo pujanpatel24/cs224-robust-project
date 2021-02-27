@@ -23,7 +23,7 @@ def backTranslate(translator, sentence, dest):
     backward = translator.translate(forward, lang_src=dest, lang_tgt='en')
     return backward
 
-def augment_by_chunk(lst):
+def augment_by_chunk(translator, lst):
     step = 5000
     string = str(lst)
     aug = ""
