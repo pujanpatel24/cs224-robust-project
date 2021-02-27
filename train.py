@@ -23,11 +23,19 @@ def backTranslate(translator, sentence, dest):
     backward = translator.translate(forward, lang_src=dest, lang_tgt='en')
     return backward
 
+def augment_by_chunk(lst):
+    step = 5000
+    string = str(lst)
+    aug = ""
+    chunks = [string[i:i+step] for i in range(0, len(string), step)]
+    for chunk in chunks:
+        aug += backTranslate(translator, chunk, 'es')
+    return eval(aug)
+
 def augment_data(dataset_dict_curr):
     translator = google_translator()
-    for i in range(len(dataset_dict_curr['question'])):
-        dataset_dict_curr['question'][i] = backTranslate(translator, dataset_dict_curr['question'][i], 'es')
-        dataset_dict_curr['context'][i] = backTranslate(translator, dataset_dict_curr['context'][i], 'es')
+    dataset_dict_curr['question'] = augment_by_chunk(translator, dataset_dict_curr['question'])
+    dataset_dict_curr['context'] = augment_by_chunk(translator, dataset_dict_curr['context'])
     return dataset_dict_curr
 
 def prepare_eval_data(dataset_dict, tokenizer):
