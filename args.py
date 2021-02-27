@@ -23,8 +23,8 @@ def get_train_test_args():
     parser.add_argument('--visualize-predictions', action='store_true')
     parser.add_argument('--eval-every', type=int, default=5000)
     parser.add_argument('--reinit-layers', type=int, default=0)
-    parser.add_argument('--ood', action='store_false')
+    parser.add_argument('--do-finetune', action='store_true')
     parser.add_argument('--model-path',type=str, default=None)
-    parser.add_argument('--config-path', type=str, default=None)
     args = parser.parse_args()
     return args
+    # python train.py --do-finetune --run-name finetune-baseline --eval-every 150 --model-path save/baseline-01/checkpoint/pytorch_model.bin

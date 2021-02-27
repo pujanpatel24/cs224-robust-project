@@ -257,7 +257,8 @@ def main():
 
     util.set_seed(args.seed)
     if args.model_path:
-        model = DistilBertForQuestionAnswering.from_pretrained(args.model)
+        model = DistilBertForQuestionAnswering.from_pretrained(args.model_path)
+        print(model)
     else:
         model = DistilBertForQuestionAnswering.from_pretrained('distilbert-base-uncased')
     tokenizer = DistilBertTokenizerFast.from_pretrained('distilbert-base-uncased')
@@ -283,9 +284,30 @@ def main():
         best_scores = trainer.train(model, train_loader, val_loader, val_dict)
 
     # if reinit_layers is > 0 then, we fine tune on OOD with reinitializing the top reinit_layers
-    if args.ood and args.reinit_layers:
-        for param in model.base_model.parameters():
-            continue
+    print(args.do_finetune)
+    if args.do_finetune:
+        print('Finetuning model on OOD')
+        if args.reinit_layers > 0:
+            for param in model.base_model.parameters():
+                continue
+        if not os.path.exists(args.save_dir):
+            os.makedirs(args.save_dir)
+        args.save_dir = util.get_save_dir(args.save_dir, args.run_name)
+        log = util.get_logger(args.save_dir, 'log_train')
+        log.info(f'Args: {json.dumps(vars(args), indent=4, sort_keys=True)}')
+        log.info("Preparing Finetuning Training Data...")
+        args.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+        trainer = Trainer(args, log)
+        finetune_dataset, _ = get_dataset(args, 'duorc,race,relation_extraction', 'datasets/oodomain_train', tokenizer, 'train')
+        log.info("Preparing Finetuning OOD Data...")
+        finetune_val_dataset, finetune_val_dict = get_dataset(args, 'duorc,race,relation_extraction', 'datasets/oodomain_val', tokenizer, 'val')
+        train_loader = DataLoader(finetune_dataset,
+                                batch_size=args.batch_size,
+                                sampler=RandomSampler(finetune_dataset))
+        val_loader = DataLoader(finetune_val_dataset,
+                                batch_size=args.batch_size,
+                                sampler=SequentialSampler(finetune_val_dataset))
+        best_scores = trainer.train(model, train_loader, val_loader, finetune_val_dict)
 
     if args.do_eval:
         args.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
