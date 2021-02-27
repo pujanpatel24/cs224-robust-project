@@ -24,6 +24,7 @@ def backTranslate(translator, sentence, dest):
     return backward
 
 def augment_data(dataset_dict_curr):
+    translator = google_translator()
     for i in range(len(dataset_dict_curr['question'])):
         dataset_dict_curr['question'][i] = backTranslate(translator, dataset_dict_curr['question'][i], 'es')
         dataset_dict_curr['context'][i] = backTranslate(translator, dataset_dict_curr['context'][i], 'es')
