@@ -25,23 +25,23 @@ def backTranslate(translator, sentence, dest):
 
 def augment_by_chunk(translator, lst):
     print(f"Length of initial list is: {len(lst)}")
-    for i in range(10):
-        print(lst[i])
+    # for i in range(10):
+    #     print(lst[i])
     step = 4000
     string = str(lst)
     print(f"Length of initial string is: {len(string)}")
     aug = ""
     chunks = [string[i:i+step] for i in range(0, len(string), step)]
     for chunk in chunks:
-        # print(len(chunk), chunk, '/n')
+        print(len(chunk), chunk, '/n')
         aug += backTranslate(translator, chunk, 'es')
-        # print(len(aug), aug)
-        # input()
+        print(len(aug), aug)
+        input()
     print(f"Length of augmented string is {len(aug)}")
     return_list = aug.strip('][').split(',')
     print(f"Length of augmented list is: {len(return_list)}")
-    for i in range(10):
-        print(return_list[i])
+    # for i in range(10):
+    #     print(return_list[i])
     input()
     return return_list
 
