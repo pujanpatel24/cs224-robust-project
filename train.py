@@ -19,19 +19,19 @@ from args import get_train_test_args
 
 from tqdm import tqdm
 
-def backTranslate(translator, sentence, dest):
-    forward = translator.translate(sentence, lang_src='en', lang_tgt=dest)
-    time.sleep(1)
-    backward = translator.translate(forward, lang_src=dest, lang_tgt='en')
-    time.sleep(1)
-    return backward
-
-def augment_data(dataset_dict_curr):
-    translator = google_translator()
-    for i in range(len(dataset_dict_curr['question'])):
-        dataset_dict_curr['question'][i] = backTranslate(translator, dataset_dict_curr['question'][i], 'es')
-        dataset_dict_curr['context'][i] = backTranslate(translator, dataset_dict_curr['context'][i], 'es')
-    return dataset_dict_curr
+# def backTranslate(translator, sentence, dest):
+#     forward = translator.translate(sentence, lang_src='en', lang_tgt=dest)
+#     time.sleep(1)
+#     backward = translator.translate(forward, lang_src=dest, lang_tgt='en')
+#     time.sleep(1)
+#     return backward
+#
+# def augment_data(dataset_dict_curr):
+#     translator = google_translator()
+#     for i in range(len(dataset_dict_curr['question'])):
+#         dataset_dict_curr['question'][i] = backTranslate(translator, dataset_dict_curr['question'][i], 'es')
+#         dataset_dict_curr['context'][i] = backTranslate(translator, dataset_dict_curr['context'][i], 'es')
+#     return dataset_dict_curr
 
 # def stringify(lst, delim):
 #     string = ""
@@ -304,10 +304,14 @@ def get_dataset(args, datasets, data_dir, tokenizer, split_name):
         dataset_dict_curr = util.read_squad(f'{data_dir}/{dataset}')
         dataset_dict = util.merge(dataset_dict, dataset_dict_curr)
         if args.augment_data:
-            aug_dict = augment_data(dataset_dict_curr)
-            print(f'Augmented {dataset}')
-            print(len(aug_dict['context']), len(aug_dict['question']), len(aug_dict['answer']))
-            dataset_dict = util.merge(dataset_dict, aug_dict)
+            with open(data_dir + '_aug/' + dataset + '.json', 'rb') as f:
+                aug_dict = json.load(f)
+                dataset_dict = util.merge(dataset_dict, aug_dict)
+            # aug_dict = augment_data(dataset_dict_curr)
+            # print(f'Augmented {dataset}')
+            # print(f"Before merging: {len(dataset_dict['question'])}, with aug_dict of length: {len(aug_dict['question'])}")
+            # dataset_dict = util.merge(dataset_dict, aug_dict)
+            # print(f"Post merging: {len(dataset_dict['question'])}")
     data_encodings = read_and_process(args, tokenizer, dataset_dict, data_dir, dataset_name, split_name)
     return util.QADataset(data_encodings, train=(split_name=='train')), dataset_dict
 

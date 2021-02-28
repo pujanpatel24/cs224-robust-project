@@ -6,6 +6,8 @@ from google_trans_new import google_translator
 
 ood_train_dir = 'datasets/oodomain_train/'
 ood_train_aug_dir = 'datasets/oodomain_train_aug/'
+ood_val_dir = 'datasets/oodomain_val/'
+ood_val_aug_dir = 'datasets/oodomain_val_aug/'
 
 # def backTranslate(translator, sentence, dest):
 #     print(sentence)
@@ -20,15 +22,6 @@ ood_train_aug_dir = 'datasets/oodomain_train_aug/'
 #         for i in range(len(dataset_dict_curr['question'])):
 #             dataset_dict_curr['question'][i] = backTranslate(translator, dataset_dict_curr['question'][i], 'es')
 #             dataset_dict_curr['context'][i] = backTranslate(translator, dataset_dict_curr['context'][i], 'es')
-
-def backTranslate(translator, sentence, dest):
-    forward = translator.translate(sentence, lang_src='en', lang_tgt=dest)
-    time.sleep(.5)
-    backward = translator.translate(forward, lang_src=dest, lang_tgt='en')
-    time.sleep(.5)
-    if not backward:
-        print(f"Alert: {backward}")
-    return backward
 
 # def stringify(lst, delim):
 #     string = ""
@@ -71,6 +64,16 @@ def backTranslate(translator, sentence, dest):
 #     dataset_dict_curr['context'] = augment_by_chunk(translator, dataset_dict_curr['context'])
 #     return dataset_dict_curr
 
+def backTranslate(translator, sentence, dest):
+    forward = translator.translate(sentence, lang_src='en', lang_tgt=dest)
+    time.sleep(1)
+    backward = translator.translate(forward, lang_src=dest, lang_tgt='en')
+    # print(backward)
+    time.sleep(1)
+    if not backward:
+        print(f"Alert: {backward}")
+    return backward
+
 def augment_data(dataset_dict_curr):
     translator = google_translator()
     for i in range(len(dataset_dict_curr['question'])):
@@ -78,16 +81,21 @@ def augment_data(dataset_dict_curr):
         dataset_dict_curr['context'][i] = backTranslate(translator, dataset_dict_curr['context'][i], 'es')
     # dataset_dict_curr['question'] = augment_by_chunk(translator, dataset_dict_curr['question'])
     # dataset_dict_curr['context'] = augment_by_chunk(translator, dataset_dict_curr['context'])
-    print()
-    print(len(dataset_dict))
-    return dataset_dict_curr
 
 def main():
     translator = google_translator()
-    for dataset in os.listdir(ood_train_dir):
-            dataset_dict_curr = util.read_squad(f'{ood_train_dir}/{dataset}')
-            augment_data(dataset_dict_curr)
-
+    for dataset in os.listdir(ood_val_dir):
+    #     with open(ood_train_dir[:-1] + '_aug/' + dataset + '.json', 'rb') as f:
+    #         aug_dict = json.load(f)
+    #         print(aug_dict['question'][0])
+        print(f"Augmenting {dataset}")
+        dataset_dict_curr = util.read_squad(f'{ood_val_dir}/{dataset}')
+        print(dataset_dict_curr['context'][0])
+        augment_data(dataset_dict_curr)
+        print(dataset_dict_curr['context'][0])
+        print(f"Saving {dataset}")
+        with open(f"{ood_val_aug_dir}{dataset}.json", 'w') as f:
+            json.dump(dataset_dict_curr, f)
 
 if __name__ == '__main__':
     main()
