@@ -35,7 +35,7 @@ def augment_by_chunk(translator, lst):
     # for i in range(10):
     #     print(lst[i])
     # input()
-    step = 4000
+    step = 2000
     string = stringify(lst, delim)
     print(f"Length of initial string is: {len(string)}")
     aug = ""
