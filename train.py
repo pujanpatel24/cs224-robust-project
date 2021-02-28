@@ -23,31 +23,32 @@ def backTranslate(translator, sentence, dest):
     backward = translator.translate(forward, lang_src=dest, lang_tgt='en')
     return backward
 
-def stringify(lst):
+def stringify(lst, delim):
     string = ""
     for elem in lst:
-        string += elem + ' '
+        string += elem + delim
     return string
 
 def augment_by_chunk(translator, lst):
+    delim = '*******************'
     print(f"Length of initial list is: {len(lst)}")
     # for i in range(10):
     #     print(lst[i])
     # input()
     step = 4000
-    string = stringify(lst)
+    string = stringify(lst, delim)
     print(f"Length of initial string is: {len(string)}")
     aug = ""
     chunks = [string[i:i+step] for i in range(0, len(string), step)]
     for chunk in chunks:
         print(chunk)
-        print(chunk.count('?'))
+        print(chunk.count(delim))
         back = backTranslate(translator, chunk, 'es')
         print(back)
-        print(print(back.count('?')))
+        print(back.count(delim))
         aug += back
     print(f"Length of augmented string is {len(aug)}")
-    return_list = aug.strip('][').split('?')
+    return_list = aug.strip('][').split(delim)
     print(f"Length of augmented list is: {len(return_list)}")
     # for i in range(10):
     #     print(return_list[i])
