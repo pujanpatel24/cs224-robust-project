@@ -293,7 +293,7 @@ def main():
         #     log.info("Freezing embedding layer and transformer blocks ")
 
         # This will be code for reinitializing the top num-layer transformer blocks
-        for layer in range(args.num-layers):
+        for layer in range(args.num_layers):
             # Get top most layers
             layer = 5 - layer
             for module in model.distilbert.transformer.layer[layer].modules():
