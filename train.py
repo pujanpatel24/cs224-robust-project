@@ -47,6 +47,7 @@ def augment_by_chunk(translator, lst):
         print(back)
         print(back.count(delim))
         aug += back
+        input()
     print(f"Length of augmented string is {len(aug)}")
     return_list = aug.strip('][').split(delim)
     print(f"Length of augmented list is: {len(return_list)}")
