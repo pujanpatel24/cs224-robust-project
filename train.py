@@ -24,7 +24,7 @@ def backTranslate(translator, sentence, dest):
     return backward
 
 def augment_by_chunk(translator, lst):
-    print(f"Length of initial list is: {len(lst)}")
+    print(f"Length of initial list is: {len(lst)}\n{lst}")
     step = 4000
     string = str(lst)
     print(f"Length of initial string is: {len(string)}")
@@ -37,7 +37,7 @@ def augment_by_chunk(translator, lst):
         # input()
     print(f"Length of augmented string is {len(aug)}")
     return_list = aug.strip('][').split(', ')
-    print(f"Length of augmented list is: {len(return_list)}")
+    print(f"Length of augmented list is: {len(return_list)}\n{return_list}")
     return return_list
 
 def augment_data(dataset_dict_curr):
