@@ -30,7 +30,7 @@ def stringify(lst, delim):
     return string
 
 def augment_by_chunk(translator, lst):
-    delim = '*******************'
+    delim = '*'
     print(f"Length of initial list is: {len(lst)}")
     # for i in range(10):
     #     print(lst[i])
