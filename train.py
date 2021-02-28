@@ -23,13 +23,20 @@ def backTranslate(translator, sentence, dest):
     backward = translator.translate(forward, lang_src=dest, lang_tgt='en')
     return backward
 
+def stringify(lst):
+    string = ""
+    for elem in list:
+        string += elem
+        string += ','
+    return string[:-1]
+
 def augment_by_chunk(translator, lst):
     print(f"Length of initial list is: {len(lst)}")
     for i in range(10):
         print(lst[i])
     input()
     step = 4000
-    string = str(lst)
+    string = stringify(lst)
     print(f"Length of initial string is: {len(string)}")
     aug = ""
     chunks = [string[i:i+step] for i in range(0, len(string), step)]
