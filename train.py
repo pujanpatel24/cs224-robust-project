@@ -27,8 +27,7 @@ def stringify(lst):
     string = ""
     for elem in lst:
         string += elem
-        string += ','
-    return string[:-1]
+    return string
 
 def augment_by_chunk(translator, lst):
     print(f"Length of initial list is: {len(lst)}")
@@ -42,14 +41,14 @@ def augment_by_chunk(translator, lst):
     chunks = [string[i:i+step] for i in range(0, len(string), step)]
     for chunk in chunks:
         print(chunk)
-        print(chunk.count(','))
+        print(chunk.count('?'))
         back = backTranslate(translator, chunk, 'es')
         print(back)
-        print(print(back.count(',')))
+        print(print(back.count('?')))
         aug += back
         input()
     print(f"Length of augmented string is {len(aug)}")
-    return_list = aug.strip('][').split(',')
+    return_list = aug.strip('][').split('?')
     print(f"Length of augmented list is: {len(return_list)}")
     # for i in range(10):
     #     print(return_list[i])
