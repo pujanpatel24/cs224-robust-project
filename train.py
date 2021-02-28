@@ -25,6 +25,9 @@ def backTranslate(translator, sentence, dest):
 
 def augment_by_chunk(translator, lst):
     print(f"Length of initial list is: {len(lst)}")
+    print(lst[0])
+    print(lst[1])
+    input()
     # for i in range(10):
     #     print(lst[i])
     step = 4000
