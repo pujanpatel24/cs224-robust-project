@@ -23,9 +23,11 @@ ood_train_aug_dir = 'datasets/oodomain_train_aug/'
 
 def backTranslate(translator, sentence, dest):
     forward = translator.translate(sentence, lang_src='en', lang_tgt=dest)
-    time.sleep(1)
+    time.sleep(.5)
     backward = translator.translate(forward, lang_src=dest, lang_tgt='en')
-    time.sleep(1)
+    time.sleep(.5)
+    if not backward:
+        print(f"Alert: {backward}")
     return backward
 
 # def stringify(lst, delim):
@@ -76,7 +78,8 @@ def augment_data(dataset_dict_curr):
         dataset_dict_curr['context'][i] = backTranslate(translator, dataset_dict_curr['context'][i], 'es')
     # dataset_dict_curr['question'] = augment_by_chunk(translator, dataset_dict_curr['question'])
     # dataset_dict_curr['context'] = augment_by_chunk(translator, dataset_dict_curr['context'])
-    print('done')
+    print()
+    print(len(dataset_dict))
     return dataset_dict_curr
 
 def main():
