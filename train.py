@@ -31,10 +31,10 @@ def augment_by_chunk(translator, lst):
     aug = ""
     chunks = [string[i:i+step] for i in range(0, len(string), step)]
     for chunk in chunks:
-        print(len(chunk), chunk, '/n')
+        # print(len(chunk), chunk, '/n')
         aug += backTranslate(translator, chunk, 'es')
-        print(len(aug), aug)
-        input()
+        # print(len(aug), aug)
+        # input()
     print(f"Length of augmented string is {len(aug)}")
     return_list = aug.strip('][').split(', ')
     print(f"Length of augmented list is: {len(return_list)}")
