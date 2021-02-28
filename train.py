@@ -26,7 +26,7 @@ def backTranslate(translator, sentence, dest):
 def stringify(lst):
     string = ""
     for elem in lst:
-        string += elem
+        string += elem + ' '
     return string
 
 def augment_by_chunk(translator, lst):
@@ -46,7 +46,6 @@ def augment_by_chunk(translator, lst):
         print(back)
         print(print(back.count('?')))
         aug += back
-        input()
     print(f"Length of augmented string is {len(aug)}")
     return_list = aug.strip('][').split('?')
     print(f"Length of augmented list is: {len(return_list)}")
