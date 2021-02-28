@@ -25,7 +25,7 @@ def backTranslate(translator, sentence, dest):
 
 def stringify(lst):
     string = ""
-    for elem in list:
+    for elem in lst:
         string += elem
         string += ','
     return string[:-1]
