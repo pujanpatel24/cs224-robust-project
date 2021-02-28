@@ -305,6 +305,7 @@ def get_dataset(args, datasets, data_dir, tokenizer, split_name):
         dataset_dict = util.merge(dataset_dict, dataset_dict_curr)
         if args.augment_data:
             aug_dict = augment_data(dataset_dict_curr)
+            print(f'Augmented {dataset}')
             dataset_dict = util.merge(dataset_dict, aug_dict)
     data_encodings = read_and_process(args, tokenizer, dataset_dict, data_dir, dataset_name, split_name)
     return util.QADataset(data_encodings, train=(split_name=='train')), dataset_dict
