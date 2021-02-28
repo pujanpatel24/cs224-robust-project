@@ -38,6 +38,7 @@ def augment_by_chunk(translator, lst):
     print(f"Length of augmented string is {len(aug)}")
     return_list = aug.strip('][').split(', ')
     print(f"Length of augmented list is: {len(return_list)}\n{return_list[0]}")
+    input()
     return return_list
 
 def augment_data(dataset_dict_curr):
