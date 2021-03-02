@@ -303,7 +303,7 @@ def get_dataset(args, datasets, data_dir, tokenizer, split_name):
         dataset_name += f'_{dataset}'
         dataset_dict_curr = util.read_squad(f'{data_dir}/{dataset}')
         dataset_dict = util.merge(dataset_dict, dataset_dict_curr)
-        if args.augment_data:
+        if args.augment_data and split_name == 'train':
             with open(data_dir + '_aug/' + dataset + '.json', 'rb') as f:
                 aug_dict = json.load(f)
                 dataset_dict = util.merge(dataset_dict, aug_dict)
@@ -350,8 +350,8 @@ def main():
     # if reinit_layers is > 0 then, we fine tune on OOD with reinitializing the top reinit_layers
     if args.do_finetune:
         print('Finetuning model on OOD')
-        
-        # # I'm not sure if we're supposed to freeze layers. I'm gonna wanna talk this over with someone. 
+
+        # # I'm not sure if we're supposed to freeze layers. I'm gonna wanna talk this over with someone.
         # for param in model.distilbert.parameters():
         #     param.requires_grad = False
         #     log.info("Freezing embedding layer and transformer blocks ")
@@ -369,11 +369,11 @@ def main():
                 if isinstance(module, nn.Linear) and module.bias is not None:
                     module.bias.data.zero_()
 
-        # Standard fine tuning approach of just fine-tuning the output layer after reinitializing. 
-        # We should probably look to see if we want to change this output layer. 
+        # Standard fine tuning approach of just fine-tuning the output layer after reinitializing.
+        # We should probably look to see if we want to change this output layer.
         model.qa_outputs.weight.data.normal_(mean=0.0, std=0.02)
         model.qa_outputs.bias.data.zero_()
-        
+
         if not os.path.exists(args.save_dir):
             os.makedirs(args.save_dir)
         args.save_dir = util.get_save_dir(args.save_dir, args.run_name)
