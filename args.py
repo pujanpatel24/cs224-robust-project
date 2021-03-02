@@ -22,6 +22,7 @@ def get_train_test_args():
     parser.add_argument('--sub-file', type=str, default='')
     parser.add_argument('--visualize-predictions', action='store_true')
     parser.add_argument('--eval-every', type=int, default=5000)
+    parser.add_argument('--augment_data', action='store_true')
     parser.add_argument('--num-layers', type=int, default=1)
     parser.add_argument('--do-finetune', action='store_true')
     parser.add_argument('--model-path',type=str, default=None)
