@@ -11,7 +11,7 @@ from transformers import AdamW
 from tensorboardX import SummaryWriter
 from google_trans_new import google_translator
 import time
-
+import torch.nn as nn
 
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import RandomSampler, SequentialSampler
@@ -346,12 +346,34 @@ def main():
                                 sampler=SequentialSampler(val_dataset))
         best_scores = trainer.train(model, train_loader, val_loader, val_dict)
 
+    # Cited from https://arxiv.org/pdf/2006.05987.pdf
     # if reinit_layers is > 0 then, we fine tune on OOD with reinitializing the top reinit_layers
     if args.do_finetune:
         print('Finetuning model on OOD')
-        if args.reinit_layers > 0:
-            for param in model.base_model.parameters():
-                continue
+        
+        # # I'm not sure if we're supposed to freeze layers. I'm gonna wanna talk this over with someone. 
+        # for param in model.distilbert.parameters():
+        #     param.requires_grad = False
+        #     log.info("Freezing embedding layer and transformer blocks ")
+
+        # This will be code for reinitializing the top num-layer transformer blocks
+        for layer in range(args.num_layers):
+            # Get top most layers
+            layer = 5 - layer
+            for module in model.distilbert.transformer.layer[layer].modules():
+                if isinstance(module, (nn.Linear, nn.Embedding)):
+                        module.weight.data.normal_(mean=0.0, std=0.02)
+                elif isinstance(module, nn.LayerNorm):
+                    module.bias.data.zero_()
+                    module.weight.data.fill_(1.0)
+                if isinstance(module, nn.Linear) and module.bias is not None:
+                    module.bias.data.zero_()
+
+        # Standard fine tuning approach of just fine-tuning the output layer after reinitializing. 
+        # We should probably look to see if we want to change this output layer. 
+        model.qa_outputs.weight.data.normal_(mean=0.0, std=0.02)
+        model.qa_outputs.bias.data.zero_()
+        
         if not os.path.exists(args.save_dir):
             os.makedirs(args.save_dir)
         args.save_dir = util.get_save_dir(args.save_dir, args.run_name)
