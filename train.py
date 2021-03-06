@@ -19,6 +19,7 @@ from args import get_train_test_args
 
 from tqdm import tqdm
 
+
 # def backTranslate(translator, sentence, dest):
 #     forward = translator.translate(sentence, lang_src='en', lang_tgt=dest)
 #     time.sleep(1)
@@ -104,7 +105,6 @@ def prepare_eval_data(dataset_dict, tokenizer):
     return tokenized_examples
 
 
-
 def prepare_train_data(dataset_dict, tokenizer):
     tokenized_examples = tokenizer(dataset_dict['question'],
                                    dataset_dict['context'],
@@ -164,7 +164,7 @@ def prepare_train_data(dataset_dict, tokenizer):
             context = dataset_dict['context'][sample_index]
             offset_st = offsets[tokenized_examples['start_positions'][-1]][0]
             offset_en = offsets[tokenized_examples['end_positions'][-1]][1]
-            if context[offset_st : offset_en] != answer['text'][0]:
+            if context[offset_st: offset_en] != answer['text'][0]:
                 inaccurate += 1
 
     total = len(tokenized_examples['id'])
@@ -172,14 +172,13 @@ def prepare_train_data(dataset_dict, tokenizer):
     return tokenized_examples
 
 
-
 def read_and_process(args, tokenizer, dataset_dict, dir_name, dataset_name, split):
-    #TODO: cache this if possible
+    # TODO: cache this if possible
     cache_path = f'{dir_name}/{dataset_name}_encodings.pt'
     if os.path.exists(cache_path) and not args.recompute_features:
         tokenized_examples = util.load_pickle(cache_path)
     else:
-        if split=='train':
+        if split == 'train':
             tokenized_examples = prepare_train_data(dataset_dict, tokenizer)
         else:
             tokenized_examples = prepare_eval_data(dataset_dict, tokenizer)
@@ -187,8 +186,7 @@ def read_and_process(args, tokenizer, dataset_dict, dir_name, dataset_name, spli
     return tokenized_examples
 
 
-
-#TODO: use a logger, use tensorboard
+# TODO: use a logger, use tensorboard
 class Trainer():
     def __init__(self, args, log):
         self.lr = args.lr
@@ -214,7 +212,7 @@ class Trainer():
         all_start_logits = []
         all_end_logits = []
         with torch.no_grad(), \
-                tqdm(total=len(data_loader.dataset)) as progress_bar:
+             tqdm(total=len(data_loader.dataset)) as progress_bar:
             for batch in data_loader:
                 # Setup for forward
                 input_ids = batch['input_ids'].to(device)
@@ -233,8 +231,8 @@ class Trainer():
         start_logits = torch.cat(all_start_logits).cpu().numpy()
         end_logits = torch.cat(all_end_logits).cpu().numpy()
         preds = util.postprocess_qa_predictions(data_dict,
-                                                 data_loader.dataset.encodings,
-                                                 (start_logits, end_logits))
+                                                data_loader.dataset.encodings,
+                                                (start_logits, end_logits))
         if split == 'validation':
             results = util.eval_dicts(data_dict, preds)
             results_list = [('F1', results['F1']),
@@ -247,13 +245,14 @@ class Trainer():
             return preds, results
         return results
 
-    def train(self, model, train_dataloader, eval_dataloader, val_dict):
+    def train(self, model, train_dataloader, eval_dataloader, val_dict, patience):
         device = self.device
         model.to(device)
         optim = AdamW(model.parameters(), lr=self.lr)
         global_idx = 0
         best_scores = {'F1': -1.0, 'EM': -1.0}
         tbx = SummaryWriter(self.save_dir)
+        curr_patience = 0
 
         for epoch_num in range(self.num_epochs):
             self.log.info(f'Epoch: {epoch_num}')
@@ -292,13 +291,19 @@ class Trainer():
                         if curr_score['F1'] >= best_scores['F1']:
                             best_scores = curr_score
                             self.save(model)
+                        else:
+                            curr_patience += 1
+                        if curr_patience == patience:
+                            self.log.info(f'Hit patience of {patience}. Early stopping at epoch {epoch_num} and step {global_idx}...')
+                            return best_scores
                     global_idx += 1
         return best_scores
+
 
 def get_dataset(args, datasets, data_dir, tokenizer, split_name):
     datasets = datasets.split(',')
     dataset_dict = None
-    dataset_name=''
+    dataset_name = ''
     for dataset in datasets:
         dataset_name += f'_{dataset}'
         dataset_dict_curr = util.read_squad(f'{data_dir}/{dataset}')
@@ -313,7 +318,8 @@ def get_dataset(args, datasets, data_dir, tokenizer, split_name):
             # dataset_dict = util.merge(dataset_dict, aug_dict)
             # print(f"Post merging: {len(dataset_dict['question'])}")
     data_encodings = read_and_process(args, tokenizer, dataset_dict, data_dir, dataset_name, split_name)
-    return util.QADataset(data_encodings, train=(split_name=='train')), dataset_dict
+    return util.QADataset(data_encodings, train=(split_name == 'train')), dataset_dict
+
 
 def main():
     # define parser and arguments
@@ -339,18 +345,18 @@ def main():
         log.info("Preparing Validation Data...")
         val_dataset, val_dict = get_dataset(args, args.train_datasets, args.val_dir, tokenizer, 'val')
         train_loader = DataLoader(train_dataset,
-                                batch_size=args.batch_size,
-                                sampler=RandomSampler(train_dataset))
+                                  batch_size=args.batch_size,
+                                  sampler=RandomSampler(train_dataset))
         val_loader = DataLoader(val_dataset,
                                 batch_size=args.batch_size,
                                 sampler=SequentialSampler(val_dataset))
-        best_scores = trainer.train(model, train_loader, val_loader, val_dict)
+        best_scores = trainer.train(model, train_loader, val_loader, val_dict, args.patience)
 
     # Cited from https://arxiv.org/pdf/2006.05987.pdf
     # if reinit_layers is > 0 then, we fine tune on OOD with reinitializing the top reinit_layers
     if args.do_finetune:
         print('Finetuning model on OOD')
-        
+
         # # I'm not sure if we're supposed to freeze layers. I'm gonna wanna talk this over with someone. 
         # for param in model.distilbert.parameters():
         #     param.requires_grad = False
@@ -362,7 +368,7 @@ def main():
             layer = 5 - layer
             for module in model.distilbert.transformer.layer[layer].modules():
                 if isinstance(module, (nn.Linear, nn.Embedding)):
-                        module.weight.data.normal_(mean=0.0, std=0.02)
+                    module.weight.data.normal_(mean=0.0, std=0.02)
                 elif isinstance(module, nn.LayerNorm):
                     module.bias.data.zero_()
                     module.weight.data.fill_(1.0)
@@ -373,7 +379,7 @@ def main():
         # We should probably look to see if we want to change this output layer. 
         model.qa_outputs.weight.data.normal_(mean=0.0, std=0.02)
         model.qa_outputs.bias.data.zero_()
-        
+
         if not os.path.exists(args.save_dir):
             os.makedirs(args.save_dir)
         args.save_dir = util.get_save_dir(args.save_dir, args.run_name)
@@ -382,16 +388,18 @@ def main():
         log.info("Preparing Finetuning Training Data...")
         args.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         trainer = Trainer(args, log)
-        finetune_dataset, _ = get_dataset(args, 'duorc,race,relation_extraction', 'datasets/oodomain_train', tokenizer, 'train')
+        finetune_dataset, _ = get_dataset(args, 'duorc,race,relation_extraction', 'datasets/oodomain_train', tokenizer,
+                                          'train')
         log.info("Preparing Finetuning OOD Data...")
-        finetune_val_dataset, finetune_val_dict = get_dataset(args, 'duorc,race,relation_extraction', 'datasets/oodomain_val', tokenizer, 'val')
+        finetune_val_dataset, finetune_val_dict = get_dataset(args, 'duorc,race,relation_extraction',
+                                                              'datasets/oodomain_val', tokenizer, 'val')
         train_loader = DataLoader(finetune_dataset,
-                                batch_size=args.batch_size,
-                                sampler=RandomSampler(finetune_dataset))
+                                  batch_size=args.batch_size,
+                                  sampler=RandomSampler(finetune_dataset))
         val_loader = DataLoader(finetune_val_dataset,
                                 batch_size=args.batch_size,
                                 sampler=SequentialSampler(finetune_val_dataset))
-        best_scores = trainer.train(model, train_loader, val_loader, finetune_val_dict)
+        best_scores = trainer.train(model, train_loader, val_loader, finetune_val_dict, args.patience)
 
     if args.do_eval:
         args.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')

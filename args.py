@@ -26,6 +26,7 @@ def get_train_test_args():
     parser.add_argument('--num-layers', type=int, default=1)
     parser.add_argument('--do-finetune', action='store_true')
     parser.add_argument('--model-path',type=str, default=None)
+    parser.add_argument('--patience', type=int, default=2)
     args = parser.parse_args()
     return args
     # python train.py --do-finetune --run-name finetune-baseline --eval-every 150 --model-path save/baseline-01/checkpoint/pytorch_model.bin
