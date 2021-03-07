@@ -357,11 +357,7 @@ def main():
     if args.do_finetune:
         print('Finetuning model on OOD')
 
-<<<<<<< HEAD
-        # # I'm not sure if we're supposed to freeze layers. I'm gonna wanna talk this over with someone. 
-=======
         # # I'm not sure if we're supposed to freeze layers. I'm gonna wanna talk this over with someone.
->>>>>>> data_aug
         # for param in model.distilbert.parameters():
         #     param.requires_grad = False
         #     log.info("Freezing embedding layer and transformer blocks ")
