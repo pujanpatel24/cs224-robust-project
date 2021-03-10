@@ -19,60 +19,6 @@ from args import get_train_test_args
 
 from tqdm import tqdm
 
-
-# def backTranslate(translator, sentence, dest):
-#     forward = translator.translate(sentence, lang_src='en', lang_tgt=dest)
-#     time.sleep(1)
-#     backward = translator.translate(forward, lang_src=dest, lang_tgt='en')
-#     time.sleep(1)
-#     return backward
-#
-# def augment_data(dataset_dict_curr):
-#     translator = google_translator()
-#     for i in range(len(dataset_dict_curr['question'])):
-#         dataset_dict_curr['question'][i] = backTranslate(translator, dataset_dict_curr['question'][i], 'es')
-#         dataset_dict_curr['context'][i] = backTranslate(translator, dataset_dict_curr['context'][i], 'es')
-#     return dataset_dict_curr
-
-# def stringify(lst, delim):
-#     string = ""
-#     for elem in lst:
-#         string += elem + delim
-#     return string
-#
-# def augment_by_chunk(translator, lst):
-#     delim = '\n'
-#     print(f"Length of initial list is: {len(lst)}")
-#     # for i in range(10):
-#     #     print(lst[i])
-#     # input()
-#     step = 2000
-#     string = stringify(lst, delim)
-#     print(f"Length of initial string is: {len(string)}")
-#     aug = ""
-#     chunks = [string[i:i+step] for i in range(0, len(string), step)]
-#     for chunk in chunks:
-#         print(chunk)
-#         print(chunk.count(delim))
-#         back = backTranslate(translator, chunk, 'es')
-#         print(back)
-#         print(back.count(delim))
-#         aug += back
-#         input()
-#     print(f"Length of augmented string is {len(aug)}")
-#     return_list = aug.strip('][').split(delim)
-#     print(f"Length of augmented list is: {len(return_list)}")
-#     # for i in range(10):
-#     #     print(return_list[i])
-#     input()
-#     return return_list
-#
-# def augment_data(dataset_dict_curr):
-#     translator = google_translator()
-#     dataset_dict_curr['question'] = augment_by_chunk(translator, dataset_dict_curr['question'])
-#     dataset_dict_curr['context'] = augment_by_chunk(translator, dataset_dict_curr['context'])
-#     return dataset_dict_curr
-
 def prepare_eval_data(dataset_dict, tokenizer):
     tokenized_examples = tokenizer(dataset_dict['question'],
                                    dataset_dict['context'],
@@ -308,8 +254,12 @@ def get_dataset(args, datasets, data_dir, tokenizer, split_name):
         dataset_name += f'_{dataset}'
         dataset_dict_curr = util.read_squad(f'{data_dir}/{dataset}')
         dataset_dict = util.merge(dataset_dict, dataset_dict_curr)
-        if args.augment_data and split_name == 'train':
-            with open(data_dir + '_aug/' + dataset + '.json', 'rb') as f:
+        if args.backtranslation and split_name == 'train':
+            with open(data_dir + '_back/' + dataset + '.json', 'rb') as f:
+                aug_dict = json.load(f)
+                dataset_dict = util.merge(dataset_dict, aug_dict)
+        if args.synonym and split_name == 'train':
+            with open(data_dir + '_syn/' + dataset + '.json', 'rb') as f:
                 aug_dict = json.load(f)
                 dataset_dict = util.merge(dataset_dict, aug_dict)
             # aug_dict = augment_data(dataset_dict_curr)
