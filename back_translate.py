@@ -81,27 +81,38 @@ def main():
             with open(f"{ood_train_syn_dir}{dataset}.json", 'w') as f:
                 json.dump(copy, f)
 
-def playground(folder):
-    for file in os.listdir(folder):
-        if not file.endswith('.json'):
-            continue
-        new_dict = {'context': [], 'question': [], 'answer': [], 'id': []}
-        aug_dict = {}
-        print(f'{folder}{file}')
-        with open(f'{folder}{file}') as f:
-            aug_dict = json.load(f)
-            print(len(aug_dict['context']))
-            for i in range(len(aug_dict['context'])):
-                if aug_dict['answer'][i]['answer_start'][0] < len(aug_dict['context'][i]):
-                    new_dict['context'].append(aug_dict['context'][i])
-                    new_dict['question'].append(aug_dict['question'][i])
-                    new_dict['answer'].append(aug_dict['answer'][i])
-                    new_dict['id'].append(aug_dict['id'][i])
-        print(len(new_dict['context']))
-        if len(new_dict['context']) > 0 and len(new_dict['context']) < len(aug_dict['context']):
-            os.remove(f'{folder}{file}')
-            with open(f'{folder}{file}', 'w') as f:
-                new_dict = json.dump(new_dict, f)
+def playground():
+    with open('datasets/oodomain_train_back/relation_extraction.json') as f:
+        bt_dict = json.load(f)
+    with open('datasets/oodomain_train_syn/relation_extraction.json') as f:
+        syn_dict = json.load(f)
+    print(f"length of bt dict is {len(bt_dict['context'])}")
+    print(f"length of syn dict is {len(syn_dict['context'])}")
+    for i in range(len(bt_dict['context'])):
+        print(bt_dict['context'][i])
+        print(syn_dict['context'][i])
+        input()
+    # for file in os.listdir(folder):
+    #     if not file.endswith('.json'):
+    #         continue
+    #     new_dict = {'context': [], 'question': [], 'answer': [], 'id': []}
+    #     aug_dict = {}
+    #     print(f'{folder}{file}')
+    #     with open(f'{folder}{file}') as f:
+    #         aug_dict = json.load(f)
+    #         print(len(aug_dict['context']))
+    #         for i in range(len(aug_dict['context'])):
+    #             if aug_dict['answer'][i]['answer_start'][0] < len(aug_dict['context'][i]):
+    #                 new_dict['context'].append(aug_dict['context'][i])
+    #                 new_dict['question'].append(aug_dict['question'][i])
+    #                 new_dict['answer'].append(aug_dict['answer'][i])
+    #                 new_dict['id'].append(aug_dict['id'][i])
+    #     print(len(new_dict['context']))
+    #     if len(new_dict['context']) > 0 and len(new_dict['context']) < len(aug_dict['context']):
+    #         os.remove(f'{folder}{file}')
+    #         with open(f'{folder}{file}', 'w') as f:
+    #             new_dict = json.dump(new_dict, f)
 
 if __name__ == '__main__':
+    # playground()
     main()
