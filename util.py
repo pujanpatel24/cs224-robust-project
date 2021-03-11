@@ -198,7 +198,7 @@ class MLMDataset(Dataset):
         return {key : torch.tensor(self.encodings[key][idx]) for key in self.keys}
 
     def __len__(self):
-        return len(self.encodings['inputs_ids'])
+        return len(self.encodings['input_ids'])
 
 def read_squad(path):
     path = Path(path)
