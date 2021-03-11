@@ -361,7 +361,7 @@ def main():
         _, train_dict = get_dataset(args, args.train_datasets, args.train_dir, tokenizer, 'train')
         pdb.set_trace();
         data_encodings = tokenizer(train_dict['context'],
-                                   truncation="only_second",
+                                   truncation=True,
                                    stride=128,
                                    max_length=384,
                                    padding='max_length')
