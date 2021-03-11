@@ -272,6 +272,9 @@ def get_dataset(args, datasets, data_dir, tokenizer, split_name):
     data_encodings = read_and_process(args, tokenizer, dataset_dict, data_dir, dataset_name, split_name)
     return util.QADataset(data_encodings, train=(split_name == 'train')), dataset_dict
 
+def mask_samples(texts):
+    inputs = texts.clone()
+    return inputs, texts
 
 def main():
     # define parser and arguments
@@ -294,15 +297,20 @@ def main():
         log.info("Preparing Training Data for MLM...")
         args.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         trainer = Trainer(args, log)
-        train_dataset, train_dict = get_dataset(args, args.train_datasets, args.train_dir, tokenizer, 'train')
+        _, train_dict = get_dataset(args, args.train_datasets, args.train_dir, tokenizer, 'train')
+        tokenized_examples = tokenizer(train_dict['context'],
+                                       truncation="only_second",
+                                       stride=128,
+                                       max_length=384,
+                                       return_overflowing_tokens=True,
+                                       return_offsets_mapping=True,
+                                       padding='max_length')
+
+        # tokenized_inputs, tokenized_labels = mask_samples(train_labels)
         pdb.set_trace();
-        # print("Train Data Set")
-        # print(train_dataset)
-        # print('Training Dictionary')
-        # print(train_dict)
-        train_loader = DataLoader(train_dataset,
-                                  batch_size=args.batch_size,
-                                  sampler=RandomSampler(train_dataset))
+
+
+
         return
         #best_scores = trainer.train(model, train_loader, val_loader, val_dict, args.patience)
 
