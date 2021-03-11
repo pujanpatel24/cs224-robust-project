@@ -14,12 +14,12 @@ import time
 import torch.nn as nn
 import pdb
 
-
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import RandomSampler, SequentialSampler
 from args import get_train_test_args
 
 from tqdm import tqdm
+
 
 def prepare_eval_data(dataset_dict, tokenizer):
     tokenized_examples = tokenizer(dataset_dict['question'],
@@ -136,8 +136,9 @@ def read_and_process(args, tokenizer, dataset_dict, dir_name, dataset_name, spli
 
 # TODO: use a logger, use tensorboard
 class Trainer():
-    def __init__(self, args, log):
+    def __init__(self, args, log, tokenizer):
         self.lr = args.lr
+        self.mlm_probability = args.mlm_probability
         self.num_epochs = args.num_epochs
         self.device = args.device
         self.eval_every = args.eval_every
@@ -146,6 +147,7 @@ class Trainer():
         self.save_dir = args.save_dir
         self.log = log
         self.visualize_predictions = args.visualize_predictions
+        self.tokenizer = tokenizer
         if not os.path.exists(self.path):
             os.makedirs(self.path)
 
@@ -192,6 +194,7 @@ class Trainer():
         if return_preds:
             return preds, results
         return results
+
 
     def train(self, model, train_dataloader, eval_dataloader, val_dict, patience):
         device = self.device
@@ -242,10 +245,71 @@ class Trainer():
                         else:
                             curr_patience += 1
                         if curr_patience == patience:
-                            self.log.info(f'Hit patience of {patience}. Early stopping at epoch {epoch_num} and step {global_idx}...')
+                            self.log.info(
+                                f'Hit patience of {patience}. Early stopping at epoch {epoch_num} and step {global_idx}...')
                             return best_scores
                     global_idx += 1
         return best_scores
+
+    #SOURCE: https://github.com/allenai/dont-stop-pretraining/blob/master/mlm_study/huggingface_study/mlm.py
+    def _mask_samples(self, inputs):
+        if self.tokenizer.mask_token is None:
+            raise ValueError(
+                "This tokenizer does not have a mask token which is necessary for masked language modeling. Remove the --mlm flag if you want to use this tokenizer."
+            )
+
+        labels = inputs.clone()
+        # We sample a few tokens in each sequence for masked-LM training (with probability args.mlm_probability defaults to 0.15 in Bert/RoBERTa)
+        probability_matrix = torch.full(labels.shape, self.mlm_probability)
+        special_tokens_mask = [
+            self.tokenizer.get_special_tokens_mask(val, already_has_special_tokens=True) for val in labels.tolist()
+        ]
+
+        probability_matrix.masked_fill_(torch.tensor(special_tokens_mask, dtype=torch.bool), value=0.0)
+        if self.tokenizer._pad_token is not None:
+            padding_mask = labels.eq(self.tokenizer.pad_token_id)
+            probability_matrix.masked_fill_(padding_mask, value=0.0)
+        masked_indices = torch.bernoulli(probability_matrix).bool()
+        labels[~masked_indices] = -100  # We only compute loss on masked tokens
+
+        # 80% of the time, we replace masked input tokens with tokenizer.mask_token ([MASK])
+        indices_replaced = torch.bernoulli(torch.full(labels.shape, 0.8)).bool() & masked_indices
+        inputs[indices_replaced] = self.tokenizer.convert_tokens_to_ids(self.tokenizer.mask_token)
+
+        # 10% of the time, we replace masked input tokens with random word
+        indices_random = torch.bernoulli(torch.full(labels.shape, 0.5)).bool() & masked_indices & ~indices_replaced
+        random_words = torch.randint(len(self.tokenizer), labels.shape, dtype=torch.long)
+        inputs[indices_random] = random_words[indices_random]
+
+        # The rest of the time (10% of the time) we keep the masked input tokens unchanged
+        return inputs, labels
+
+    def trainMLM(self, model, train_dataloader):
+        device = self.device
+        model.to(device)
+        optim = AdamW(model.parameters(), lr=self.lr)
+        global_idx = 0
+        tbx = SummaryWriter(self.save_dir)
+
+        for epoch_num in range(self.num_epochs):
+            self.log.info(f'Epoch: {epoch_num}')
+            with torch.enable_grad(), tqdm(total=len(train_dataloader.dataset)) as progress_bar:
+                for batch in train_dataloader:
+                    optim.zero_grad()
+                    model.train()
+                    attention_mask = batch['attention_mask'].to(device)
+                    masked_inputs, labels = self._mask_samples(batch['input_ids'])
+                    masked_inputs = masked_inputs.to(device)
+                    labels = labels.to(device)
+                    outputs = model(masked_inputs, attention_mask=attention_mask, labels=labels)
+                    loss = outputs[0]
+                    loss.backward()
+                    optim.step()
+                    progress_bar.update(len(masked_inputs))
+                    progress_bar.set_postfix(epoch=epoch_num, NLL=loss.item())
+                    tbx.add_scalar('train/NLL', loss.item(), global_idx)
+                    global_idx += 1
+        self.save(model)
 
 
 def get_dataset(args, datasets, data_dir, tokenizer, split_name):
@@ -272,9 +336,6 @@ def get_dataset(args, datasets, data_dir, tokenizer, split_name):
     data_encodings = read_and_process(args, tokenizer, dataset_dict, data_dir, dataset_name, split_name)
     return util.QADataset(data_encodings, train=(split_name == 'train')), dataset_dict
 
-def mask_samples(texts):
-    inputs = texts.clone()
-    return inputs, texts
 
 def main():
     # define parser and arguments
@@ -296,23 +357,18 @@ def main():
         log.info(f'Args: {json.dumps(vars(args), indent=4, sort_keys=True)}')
         log.info("Preparing Training Data for MLM...")
         args.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-        trainer = Trainer(args, log)
+        trainer = Trainer(args, log, tokenizer)
         _, train_dict = get_dataset(args, args.train_datasets, args.train_dir, tokenizer, 'train')
-        tokenized_examples = tokenizer(train_dict['context'],
-                                       truncation="only_second",
-                                       stride=128,
-                                       max_length=384,
-                                       return_overflowing_tokens=True,
-                                       return_offsets_mapping=True,
-                                       padding='max_length')
-
-        # tokenized_inputs, tokenized_labels = mask_samples(train_labels)
         pdb.set_trace();
-
-
-
-        return
-        #best_scores = trainer.train(model, train_loader, val_loader, val_dict, args.patience)
+        data_encodings = tokenizer(train_dict['context'],
+                                   truncation="only_second",
+                                   stride=128,
+                                   max_length=384,
+                                   padding='max_length')
+        train_dataset = util.MLMDataset(data_encodings)
+        train_loader = DataLoader(train_dataset, batch_size=args.batch_size,
+                                  sampler=RandomSampler(train_dataset))
+        trainer.trainMLM(model, train_loader)
 
     if args.do_train:
         if not os.path.exists(args.save_dir):
@@ -322,7 +378,7 @@ def main():
         log.info(f'Args: {json.dumps(vars(args), indent=4, sort_keys=True)}')
         log.info("Preparing Training Data...")
         args.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-        trainer = Trainer(args, log)
+        trainer = Trainer(args, log, tokenizer)
         train_dataset, _ = get_dataset(args, args.train_datasets, args.train_dir, tokenizer, 'train')
         log.info("Preparing Validation Data...")
         val_dataset, val_dict = get_dataset(args, args.train_datasets, args.val_dir, tokenizer, 'val')
@@ -369,7 +425,7 @@ def main():
         log.info(f'Args: {json.dumps(vars(args), indent=4, sort_keys=True)}')
         log.info("Preparing Finetuning Training Data...")
         args.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-        trainer = Trainer(args, log)
+        trainer = Trainer(args, log, tokenizer)
         finetune_dataset, _ = get_dataset(args, 'duorc,race,relation_extraction', 'datasets/oodomain_train', tokenizer,
                                           'train')
         log.info("Preparing Finetuning OOD Data...")
@@ -387,7 +443,7 @@ def main():
         args.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         split_name = 'test' if 'test' in args.eval_dir else 'validation'
         log = util.get_logger(args.save_dir, f'log_{split_name}')
-        trainer = Trainer(args, log)
+        trainer = Trainer(args, log, tokenizer)
         checkpoint_path = os.path.join(args.save_dir, 'checkpoint')
         model = DistilBertForQuestionAnswering.from_pretrained(checkpoint_path)
         model.to(args.device)

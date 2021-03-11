@@ -191,7 +191,7 @@ class QADataset(Dataset):
 class MLMDataset(Dataset):
     def __init__(self, encodings):
         self.encodings = encodings
-        self.keys = ['inputs_ids']
+        self.keys = ['inputs_ids', 'attention_mask']
         assert(all(key in self.encodings for key in self.keys))
 
     def __getitem__(self, idx):
