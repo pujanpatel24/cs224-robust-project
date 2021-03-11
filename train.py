@@ -301,7 +301,7 @@ def main():
                                 batch_size=args.batch_size,
                                 sampler=SequentialSampler(val_dataset))
         best_scores = trainer.train(model, train_loader, val_loader, val_dict, args.patience)
-
+        return best_scores
     # Cited from https://arxiv.org/pdf/2006.05987.pdf
     # if reinit_layers is > 0 then, we fine tune on OOD with reinitializing the top reinit_layers
     if args.do_finetune:
@@ -350,7 +350,7 @@ def main():
                                 batch_size=args.batch_size,
                                 sampler=SequentialSampler(finetune_val_dataset))
         best_scores = trainer.train(model, train_loader, val_loader, finetune_val_dict, args.patience)
-
+        return best_scores
     if args.do_eval:
         args.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         split_name = 'test' if 'test' in args.eval_dir else 'validation'
@@ -379,4 +379,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    return main()

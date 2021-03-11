@@ -7,50 +7,43 @@ from subprocess import call
 from sklearn.model_selection import ParameterGrid
 from datetime import date
 
-# any special experiment name to name output folders
-EXP_NAME = None
 
 # key is the argument name expected by main.py
 # value should be a list of options
 GRID_SEARCH = {
-    'lr': [1e-3, 1e-2],
-    'pretrained': [True, False]
+    'batch-size': [2,4,8,16],
+    'lr': [5e-5,1e-4,1e-3, 1e-2],
+    'num-epochs': [40],
+    'num-layers': [0,1,2]
 }
 
-# key is the argument name expected by main.py
-# value should be a single value
-OTHER_PARAMETERS = {
-    'dataset_name': "test",
-    'gpus': 1 
-}
 
-def main(args):
-    grid = ParameterGrid(GRID_SEARCH)
-    input(f"This will result in {len(list(grid))} exps. OK?")
-    
-    name = f"_{EXP_NAME}" if EXP_NAME else ""
-    for grid_params in grid:
-        exp = f"{date.today()}{name}"
-        cmd = "python main.py train"
-        
-        # add grid search params
-        for key, val in grid_params.items():
-            exp += f"_{key}={val}"
-            cmd += f" --{key} {val}"
-        
-        # add other params
-        for key, val in OTHER_PARAMETERS.items():
-            cmd += f" --{key} {val}"
-        cmd += f" --exp_name {exp}"
-        
-        if args.print_only:
-            print(cmd)
-        else:
-            print(f"Running command: {cmd}")
-            call(cmd, shell=True)
-    
-if __name__=='__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--print_only', action='store_true', default=False)
-    args = parser.parse_args()
-    main(args)
+def main():
+    for bs in [2,4,8,16]:
+        for lr in [5e-5,1e-4,1e-3, 1e-2]:
+            for epochs in [40]:
+                for layers in [-1,0,1,2]:
+                    for backtranslation in [False, True]:
+                        for synonym in [False, True]:
+                            model_name = "grid_search_bs_{}_lr_{}_num_layers_{}_bt_{}_syn_{}".format(bs, lr, layers, backtranslation, synonym)
+                            cmd = "python train.py --run-name {} --eval-every 150 --model-path {} ".format(model_name, "save/baseline-early-stop-01")
+                            cmd += "--batch-size {} ".format(bs)
+                            cmd += "--lr {} ".format(lr)
+                            cmd += "--num-epochs {} ".format(epochs)
+                            if layers == -1:
+                                cmd += "--do-train "
+                            else:
+                                cmd += "--do-finetune "
+                                cmd += "--num-layers {} ".format(layers)
+                            if backtranslation:
+                                cmd += "--backtranslation "
+                            if synonym:
+                                cmd += "--synonym "
+
+                            output = call(cmd, shell=True)
+                            f = open("results.txt", "a")
+                            f.write("Results for model_name {} is {}".format(model_name, output))
+                            f.close()
+
+if __name__ == '__main__':
+    main()
