@@ -6,12 +6,14 @@ import torch
 import csv
 import util
 from transformers import DistilBertTokenizerFast
-from transformers import DistilBertForQuestionAnswering
+from transformers import DistilBertForQuestionAnswering, DistilBertForMaskedLM
 from transformers import AdamW
 from tensorboardX import SummaryWriter
 from google_trans_new import google_translator
 import time
 import torch.nn as nn
+import pdb
+
 
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import RandomSampler, SequentialSampler
@@ -276,11 +278,33 @@ def main():
     args = get_train_test_args()
 
     util.set_seed(args.seed)
-    if args.model_path:
-        model = DistilBertForQuestionAnswering.from_pretrained(args.model_path)
+    model_path = args.model_path if args.model_path else 'distilbert-base-uncased'
+    if args.pretrain_MLM:
+        model = DistilBertForMaskedLM.from_pretrained(model_path)
     else:
-        model = DistilBertForQuestionAnswering.from_pretrained('distilbert-base-uncased')
+        model = DistilBertForQuestionAnswering.from_pretrained(model_path)
     tokenizer = DistilBertTokenizerFast.from_pretrained('distilbert-base-uncased')
+
+    if args.pretrain_MLM:
+        if not os.path.exists(args.save_dir):
+            os.makedirs(args.save_dir)
+        args.save_dir = util.get_save_dir(args.save_dir, args.run_name)
+        log = util.get_logger(args.save_dir, 'log_train')
+        log.info(f'Args: {json.dumps(vars(args), indent=4, sort_keys=True)}')
+        log.info("Preparing Training Data for MLM...")
+        args.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+        trainer = Trainer(args, log)
+        train_dataset, train_dict = get_dataset(args, args.train_datasets, args.train_dir, tokenizer, 'train')
+        pdb.set_trace();
+        # print("Train Data Set")
+        # print(train_dataset)
+        # print('Training Dictionary')
+        # print(train_dict)
+        train_loader = DataLoader(train_dataset,
+                                  batch_size=args.batch_size,
+                                  sampler=RandomSampler(train_dataset))
+        return
+        #best_scores = trainer.train(model, train_loader, val_loader, val_dict, args.patience)
 
     if args.do_train:
         if not os.path.exists(args.save_dir):
