@@ -309,7 +309,7 @@ class Trainer():
                     progress_bar.set_postfix(epoch=epoch_num, NLL=loss.item())
                     tbx.add_scalar('train/NLL', loss.item(), global_idx)
                     global_idx += 1
-        self.save(model)
+            self.save(model)
 
 
 def get_dataset(args, datasets, data_dir, tokenizer, split_name):
