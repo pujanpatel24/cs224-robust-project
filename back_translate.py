@@ -8,26 +8,27 @@ from google_trans_new import google_translator
 from PyDictionary import PyDictionary
 
 ood_train_dir = 'datasets/oodomain_train/'
-ood_train_bt_dir = 'datasets/oodomain_train_bt/'
-ood_train_syn_dir = 'datasets/oodomain_train_syn/'
-alpha = 0.2
+ood_train_bt_dir = 'datasets/oodomain_train_back2/'
+ood_train_syn_dir = 'datasets/oodomain_train_syn2/'
+alpha = 0.5
 
 PAD_CHAR = u"\u25A1"
 
-def backTranslate(translator, sentence, dest):
-    forward = translator.translate(sentence, lang_src='en', lang_tgt=dest)
+def backTranslate(translator, sentence):
+    russian = translator.translate(sentence, lang_src='es', lang_tgt='ru')
     time.sleep(1)
-    backward = translator.translate(forward, lang_src=dest, lang_tgt='en')
-    # print(backward)
+    japanese = translator.translate(russian, lang_src='ru', lang_tgt='ja')
     time.sleep(1)
-    if not backward:
-        print(f"Alert: {backward}")
-    return backward
+    english = translator.translate(japanese, lang_src='ja', lang_tgt='en')
+    time.sleep(1)
+    if not english:
+        print(f"Alert: {english}")
+    return english
 
 def augment_bt_data(translator, dataset_dict_curr):
     for i in range(len(dataset_dict_curr['question'])):
-        question = backTranslate(translator, dataset_dict_curr['question'][i], 'es')
-        context = backTranslate(translator, dataset_dict_curr['context'][i], 'es')
+        question = backTranslate(translator, dataset_dict_curr['question'][i])
+        context = backTranslate(translator, dataset_dict_curr['context'][i])
         if dataset_dict_curr['answer'][i]['answer_start'][0] < len(context):
             dataset_dict_curr['question'][i] = question
             dataset_dict_curr['context'][i] = context
@@ -57,7 +58,7 @@ def main():
         print("No more that one argument please.")
         exit()
     else:
-        if sys.argv[1] == 'bt':
+        if sys.argv[1] == 'back':
             backtranslate = True
         elif sys.argv[1] == 'syn':
             synonym = True
