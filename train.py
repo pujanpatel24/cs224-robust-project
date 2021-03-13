@@ -195,7 +195,6 @@ class Trainer():
             return preds, results
         return results
 
-
     def train(self, model, train_dataloader, eval_dataloader, val_dict, patience):
         device = self.device
         model.to(device)
@@ -251,7 +250,7 @@ class Trainer():
                     global_idx += 1
         return best_scores
 
-    #SOURCE: https://github.com/allenai/dont-stop-pretraining/blob/master/mlm_study/huggingface_study/mlm.py
+    # SOURCE: https://github.com/allenai/dont-stop-pretraining/blob/master/mlm_study/huggingface_study/mlm.py
     def _mask_samples(self, inputs):
         if self.tokenizer.mask_token is None:
             raise ValueError(
@@ -290,6 +289,7 @@ class Trainer():
         optim = AdamW(model.parameters(), lr=self.lr)
         global_idx = 0
         tbx = SummaryWriter(self.save_dir)
+        best_loss = float('inf')
 
         for epoch_num in range(self.num_epochs):
             self.log.info(f'Epoch: {epoch_num}')
@@ -308,8 +308,12 @@ class Trainer():
                     progress_bar.update(len(masked_inputs))
                     progress_bar.set_postfix(epoch=epoch_num, NLL=loss.item())
                     tbx.add_scalar('train/NLL', loss.item(), global_idx)
+                    if (global_idx % self.eval_every) == 0:
+                        if loss < best_loss:
+                            best_loss = loss
+                            self.log.info(f'Saving model at step: {epoch_num}')
+                            self.save(model)
                     global_idx += 1
-            self.save(model)
 
 
 def get_dataset(args, datasets, data_dir, tokenizer, split_name):
@@ -359,7 +363,6 @@ def main():
         args.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         trainer = Trainer(args, log, tokenizer)
         _, train_dict = get_dataset(args, args.train_datasets, args.train_dir, tokenizer, 'train')
-        pdb.set_trace();
         data_encodings = tokenizer(train_dict['context'],
                                    truncation=True,
                                    stride=128,
