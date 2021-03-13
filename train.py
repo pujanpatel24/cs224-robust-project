@@ -138,6 +138,7 @@ def read_and_process(args, tokenizer, dataset_dict, dir_name, dataset_name, spli
 class Trainer():
     def __init__(self, args, log, tokenizer):
         self.lr = args.lr
+        self.lr_decay = args.lr_decay
         self.mlm_probability = args.mlm_probability
         self.num_epochs = args.num_epochs
         self.device = args.device
@@ -198,7 +199,7 @@ class Trainer():
     def train(self, model, train_dataloader, eval_dataloader, val_dict, patience):
         device = self.device
         model.to(device)
-        optim = AdamW(model.parameters(), lr=self.lr)
+        optim = AdamW(model.parameters(), lr=self.lr, weight_decay=self.lr_decay)
         global_idx = 0
         best_scores = {'F1': -1.0, 'EM': -1.0}
         tbx = SummaryWriter(self.save_dir)
