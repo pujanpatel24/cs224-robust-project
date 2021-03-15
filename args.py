@@ -30,7 +30,7 @@ def get_train_test_args():
     parser.add_argument('--patience', type=int, default=2)
     parser.add_argument('--pretrain-MLM', action='store_true')
     parser.add_argument('--mlm-probability', type=float, default=0.15)
-    parser.add_argument('--lr-decay', type=float, default=0.0)
+    parser.add_argument('--weight-decay', type=float, default=1e-2)
     args = parser.parse_args()
     return args
     # python train.py --do-finetune --run-name finetune-baseline --eval-every 150 --model-path save/baseline-01/checkpoint/pytorch_model.bin

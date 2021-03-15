@@ -138,7 +138,7 @@ def read_and_process(args, tokenizer, dataset_dict, dir_name, dataset_name, spli
 class Trainer():
     def __init__(self, args, log, tokenizer):
         self.lr = args.lr
-        self.lr_decay = args.lr_decay
+        self.weight_decay = args.weight_decay
         self.mlm_probability = args.mlm_probability
         self.num_epochs = args.num_epochs
         self.device = args.device
@@ -199,7 +199,7 @@ class Trainer():
     def train(self, model, train_dataloader, eval_dataloader, val_dict, patience):
         device = self.device
         model.to(device)
-        optim = AdamW(model.parameters(), lr=self.lr, weight_decay=self.lr_decay)
+        optim = AdamW(model.parameters(), lr=self.lr, weight_decay=self.weight_decayy)
         global_idx = 0
         best_scores = {'F1': -1.0, 'EM': -1.0}
         tbx = SummaryWriter(self.save_dir)
@@ -333,6 +333,13 @@ def get_dataset(args, datasets, data_dir, tokenizer, split_name):
             with open(data_dir + '_syn/' + dataset + '.json', 'rb') as f:
                 aug_dict = json.load(f)
                 dataset_dict = util.merge(dataset_dict, aug_dict)
+        if split_name == 'val':
+            if dataset == 'duorc':
+                dataset_dict = util.merge(dataset_dict, dataset_dict_curr)
+                dataset_dict = util.merge(dataset_dict, dataset_dict_curr)
+            elif dataset == 'relation_extraction':
+                for i in range(6):
+                    dataset_dict = util.merge(dataset_dict, dataset_dict_curr)
             # aug_dict = augment_data(dataset_dict_curr)
             # print(f'Augmented {dataset}')
             # print(f"Before merging: {len(dataset_dict['question'])}, with aug_dict of length: {len(aug_dict['question'])}")
