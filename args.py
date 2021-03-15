@@ -13,8 +13,8 @@ def get_train_test_args():
     parser.add_argument('--train-datasets', type=str, default='squad,nat_questions,newsqa')
     parser.add_argument('--run-name', type=str, default='multitask_distilbert')
     parser.add_argument('--recompute-features', action='store_true')
-    parser.add_argument('--train-dir', type=str, default='datasets/indomain_train')
-    parser.add_argument('--val-dir', type=str, default='datasets/indomain_val')
+    parser.add_argument('--train-dir', type=str, default='datasets/oodomain_train')
+    parser.add_argument('--val-dir', type=str, default='datasets/oodomain_val')
     parser.add_argument('--eval-dir', type=str, default='datasets/oodomain_test')
     parser.add_argument('--eval-datasets', type=str, default='race,relation_extraction,duorc')
     parser.add_argument('--do-train', action='store_true')
@@ -27,6 +27,10 @@ def get_train_test_args():
     parser.add_argument('--num-layers', type=int, default=1)
     parser.add_argument('--do-finetune', action='store_true')
     parser.add_argument('--model-path',type=str, default=None)
+    parser.add_argument('--patience', type=int, default=2)
+    parser.add_argument('--pretrain-MLM', action='store_true')
+    parser.add_argument('--mlm-probability', type=float, default=0.15)
+    parser.add_argument('--weight-decay', type=float, default=1e-2)
     args = parser.parse_args()
     return args
     # python train.py --do-finetune --run-name finetune-baseline --eval-every 150 --model-path save/baseline-01/checkpoint/pytorch_model.bin
