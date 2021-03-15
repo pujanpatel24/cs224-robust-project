@@ -199,7 +199,7 @@ class Trainer():
     def train(self, model, train_dataloader, eval_dataloader, val_dict, patience):
         device = self.device
         model.to(device)
-        optim = AdamW(model.parameters(), lr=self.lr, weight_decay=self.weight_decayy)
+        optim = AdamW(model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
         global_idx = 0
         best_scores = {'F1': -1.0, 'EM': -1.0}
         tbx = SummaryWriter(self.save_dir)
