@@ -228,7 +228,7 @@ class Trainer():
                     # print(regularization)
 
                     loss_1 = nn.MSELoss()
-                    output2 = loss_1(torch.argmax(outputs[1], dim=1, dtype=torch.float32), torch.argmax(outputs[2], dim=1, dtype=torch.float32))
+                    output2 = loss_1(torch.argmax(outputs[1], dim=1).float(), torch.argmax(outputs[2], dim=1).float())
                     loss = outputs[0] + lamb * output2
                     pdb.set_trace();
                     loss.backward()
