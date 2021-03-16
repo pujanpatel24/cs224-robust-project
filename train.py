@@ -222,6 +222,7 @@ class Trainer():
                     # loss = outputs[0]
                     regularization = torch.sum(torch.square(torch.argmax(outputs[1], dim=1) - torch.argmax(outputs[2], dim=1))) / outputs[1].shape[0]
                     print(outputs[0])
+                    print(outputs[1].shape)
                     print(torch.argmax(outputs[1], dim=1))
                     print(torch.argmax(outputs[2], dim=1))
                     print(regularization)
