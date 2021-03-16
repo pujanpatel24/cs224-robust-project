@@ -242,6 +242,7 @@ class Trainer():
                     #     one_hot[i][end_positions[i]] = 1
                     loss2 = nn.CrossEntropyLoss()
                     avg_position = (start_positions + end_positions) / 2
+                    avg_position = avg_position.type(torch.long)
                     # start_positions = start_positions.squeeze(-1)
                     # end_positions = end_positions.squeeze(-1)
                     # ignored_index = outputs[1].size(1)
