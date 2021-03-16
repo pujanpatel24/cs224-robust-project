@@ -199,7 +199,18 @@ class Trainer():
     def train(self, model, train_dataloader, eval_dataloader, val_dict, patience):
         device = self.device
         model.to(device)
-        optim = AdamW(model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+        #optim = AdamW(model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+        optim = AdamW(
+                            [
+                                                {"params": model.distilbert.transformer.layer[0].parameters(), "lr": 1e-5},
+                                                                {"params": model.distilbert.transformer.layer[1].parameters(), "lr": 1e-5},
+                                                                                {"params": model.distilbert.transformer.layer[2].parameters(), "lr": 2e-5},
+                                                                                                {"params": model.distilbert.transformer.layer[3].parameters(), "lr": 2e-5},
+                                                                                                                {"params": model.distilbert.transformer.layer[4].parameters(), "lr": 3e-5},
+                                                                                                                                {"params": model.distilbert.transformer.layer[5].parameters(), "lr": 3e-5},
+                                                                                                                                            ],
+                                        lr=self.lr, weight_decay=self.weight_decay
+                                                )
         global_idx = 0
         best_scores = {'F1': -1.0, 'EM': -1.0}
         tbx = SummaryWriter(self.save_dir)
@@ -287,7 +298,18 @@ class Trainer():
     def trainMLM(self, model, train_dataloader):
         device = self.device
         model.to(device)
-        optim = AdamW(model.parameters(), lr=self.lr)
+        #optim = AdamW(model.parameters(), lr=self.lr)
+        optim = AdamW(
+                            [
+                                                {"params": model.distilbert.transformer.layer[0].parameters(), "lr": 1e-5},
+                                                                {"params": model.distilbert.transformer.layer[1].parameters(), "lr": 1e-5},
+                                                                                {"params": model.distilbert.transformer.layer[2].parameters(), "lr": 2e-5},
+                                                                                                {"params": model.distilbert.transformer.layer[3].parameters(), "lr": 2e-5},
+                                                                                                                {"params": model.distilbert.transformer.layer[4].parameters(), "lr": 3e-5},
+                                                                                                                                {"params": model.distilbert.transformer.layer[5].parameters(), "lr": 3e-5},
+                                                                                                                                            ],
+                                        lr=self.lr, weight_decay=self.weight_decay
+                                                )
         global_idx = 0
         tbx = SummaryWriter(self.save_dir)
         best_loss = float('inf')
@@ -407,10 +429,9 @@ def main():
         print('Finetuning model on OOD')
 
         # # I'm not sure if we're supposed to freeze layers. I'm gonna wanna talk this over with someone.
-        # for param in model.distilbert.parameters():
-        #     param.requires_grad = False
-        #     log.info("Freezing embedding layer and transformer blocks ")
-
+        for param in model.distilbert.transformer.layer[0].parameters():
+            param.requires_grad = False
+            
         # This will be code for reinitializing the top num-layer transformer blocks
         for layer in range(args.num_layers):
             # Get top most layers
