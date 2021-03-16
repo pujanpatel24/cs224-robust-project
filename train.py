@@ -249,7 +249,7 @@ class Trainer():
                     # start_positions.clamp_(0, ignored_index)
                     # end_positions.clamp_(0, ignored_index)
                     outputs2 = loss2(outputs[1]+outputs[2], avg_position)
-                    loss += lamb * outputs2
+                    total_loss = loss + lamb * outputs2
                     pdb.set_trace();
                     loss.backward()
                     optim.step()
