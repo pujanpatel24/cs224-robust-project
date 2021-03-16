@@ -236,7 +236,11 @@ class Trainer():
                     # loss = outputs[0] + lamb * output2
                     loss = outputs[0]
                     loss2 = nn.CrossEntropyLoss()
-                    pdb.set_trace();
+                    start_positions = start_positions.squeeze(-1)
+                    end_positions = end_positions.sqeueeze(-1)
+                    ignored_index = start_logts.size(1)
+                    start_positions.clamp_(0, ignored_index)
+                    end_positions.clamp_(0, ignored_index)
                     outputs2 = loss2(outputs[1]-outputs[2], start_positions-end_positions)
                     loss += lamb * outputs2
                     pdb.set_trace();
