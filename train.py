@@ -236,13 +236,17 @@ class Trainer():
                     # loss = outputs[0] + lamb * output2
                     loss = outputs[0]
                     pdb.set_trace();
+                    one_hot = torch.zeros(outputs[1].shape)
+                    for i in range(one_hot_start.shape[0]):
+                        one_hot[i][start_positions[i]] = 1
+                        one_hot[i][end_positions[i]] = 1
                     loss2 = nn.CrossEntropyLoss()
-                    start_positions = start_positions.squeeze(-1)
-                    end_positions = end_positions.squeeze(-1)
-                    ignored_index = outputs[1].size(1)
-                    start_positions.clamp_(0, ignored_index)
-                    end_positions.clamp_(0, ignored_index)
-                    outputs2 = loss2(outputs[1]-outputs[2], start_positions-end_positions)
+                    # start_positions = start_positions.squeeze(-1)
+                    # end_positions = end_positions.squeeze(-1)
+                    # ignored_index = outputs[1].size(1)
+                    # start_positions.clamp_(0, ignored_index)
+                    # end_positions.clamp_(0, ignored_index)
+                    outputs2 = loss2(outputs[1]+outputs[2], one_hot)
                     loss += lamb * outputs2
                     pdb.set_trace();
                     loss.backward()
