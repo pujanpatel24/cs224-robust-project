@@ -221,13 +221,13 @@ class Trainer():
                                     end_positions=end_positions)
                     # loss = outputs[0]
                     loss1 = outputs[0]
-                    pdb.set_trace();
+                    # pdb.set_trace();
                     loss_fn = nn.CrossEntropyLoss()
                     avg_position = (start_positions + end_positions) / 2
                     avg_position = avg_position.type(torch.long)
                     loss2 = loss_fn(outputs[1]+outputs[2], avg_position)
                     loss = loss1 + lamb * loss2
-                    pdb.set_trace();
+                    # pdb.set_trace();
                     loss.backward()
                     optim.step()
                     progress_bar.update(len(input_ids))
