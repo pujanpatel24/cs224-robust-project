@@ -220,7 +220,7 @@ class Trainer():
                                     start_positions=start_positions,
                                     end_positions=end_positions)
                     # loss = outputs[0]
-                    regularization = torch.mean(torch.square(torch.argmax(outputs[1], dim=1) - torch.argmax(outputs[2], dim=1)))
+                    regularization = torch.sum(torch.square(torch.argmax(outputs[1], dim=1) - torch.argmax(outputs[2], dim=1))) / outputs[1].shape[0]
                     loss = outputs[0] + lamb * regularization
                     loss.backward()
                     optim.step()
