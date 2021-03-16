@@ -221,6 +221,7 @@ class Trainer():
                                     end_positions=end_positions)
                     # loss = outputs[0]
                     regularization = torch.sum(torch.square(torch.argmax(outputs[1], dim=1) - torch.argmax(outputs[2], dim=1))) / outputs[1].shape[0]
+                    print(outputs[0], outputs[1], outputs[2], regularization)
                     loss = outputs[0] + lamb * regularization
                     loss.backward()
                     optim.step()
@@ -343,11 +344,6 @@ def get_dataset(args, datasets, data_dir, tokenizer, split_name):
             elif dataset == 'relation_extraction':
                 for i in range(6):
                     dataset_dict = util.merge(dataset_dict, dataset_dict_curr)
-            # aug_dict = augment_data(dataset_dict_curr)
-            # print(f'Augmented {dataset}')
-            # print(f"Before merging: {len(dataset_dict['question'])}, with aug_dict of length: {len(aug_dict['question'])}")
-            # dataset_dict = util.merge(dataset_dict, aug_dict)
-            # print(f"Post merging: {len(dataset_dict['question'])}")
     data_encodings = read_and_process(args, tokenizer, dataset_dict, data_dir, dataset_name, split_name)
     return util.QADataset(data_encodings, train=(split_name == 'train')), dataset_dict
 
