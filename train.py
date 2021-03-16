@@ -236,7 +236,7 @@ class Trainer():
                     # loss = outputs[0] + lamb * output2
                     loss = outputs[0]
                     pdb.set_trace();
-                    one_hot = torch.zeros(outputs[1].shape)
+                    one_hot = torch.zeros(outputs[1].shape).to(device)
                     for i in range(one_hot.shape[0]):
                         one_hot[i][start_positions[i]] = 1
                         one_hot[i][end_positions[i]] = 1
