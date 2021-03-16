@@ -343,15 +343,15 @@ def get_dataset(args, datasets, data_dir, tokenizer, split_name):
                 dataset_dict = util.merge(dataset_dict, aug_dict)
         if split_name == 'val':
             if dataset == 'duorc':
-                print("Before: ", dataset, len(dataset_dict))
+                print("Before: ", dataset, len(dataset_dict['question']))
                 dataset_dict = util.merge(dataset_dict, dataset_dict_curr)
                 dataset_dict = util.merge(dataset_dict, dataset_dict_curr)
-                print("After: ", dataset, len(dataset_dict))
+                print("After: ", dataset, len(dataset_dict['question']))
             elif dataset == 'relation_extraction':
-                print("Before: ", dataset, len(dataset_dict))
+                print("Before: ", dataset, len(dataset_dict['question']))
                 for i in range(6):
                     dataset_dict = util.merge(dataset_dict, dataset_dict_curr)
-                print("After: ", dataset, len(dataset_dict))
+                print("After: ", dataset, len(dataset_dict['question']))
     data_encodings = read_and_process(args, tokenizer, dataset_dict, data_dir, dataset_name, split_name)
     return util.QADataset(data_encodings, train=(split_name == 'train')), dataset_dict
 
