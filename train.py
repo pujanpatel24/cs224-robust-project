@@ -238,7 +238,7 @@ class Trainer():
                     loss2 = nn.CrossEntropyLoss()
                     start_positions = start_positions.squeeze(-1)
                     end_positions = end_positions.squeeze(-1)
-                    ignored_index = start_logts.size(1)
+                    ignored_index = start_logits.size(1)
                     start_positions.clamp_(0, ignored_index)
                     end_positions.clamp_(0, ignored_index)
                     outputs2 = loss2(outputs[1]-outputs[2], start_positions-end_positions)
