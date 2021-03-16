@@ -20,7 +20,7 @@ from args import get_train_test_args
 
 from tqdm import tqdm
 
-lamb = 5e-5
+lamb = 0.3
 
 def prepare_eval_data(dataset_dict, tokenizer):
     tokenized_examples = tokenizer(dataset_dict['question'],
@@ -220,36 +220,13 @@ class Trainer():
                                     start_positions=start_positions,
                                     end_positions=end_positions)
                     # loss = outputs[0]
-                    # regularization = torch.sum(torch.square(torch.argmax(outputs[1], dim=1) - torch.argmax(outputs[2], dim=1))) / outputs[1].shape[0]
-                    # print(outputs[0])
-                    # print(outputs[1].shape)
-                    # print(torch.argmax(outputs[1], dim=1))
-                    # print(torch.argmax(outputs[2], dim=1))
-                    # print(regularization)
-
-                    # loss_1 = nn.MSELoss()
-                    # start_logits = torch.argmax(outputs[1], dim=1).float()
-                    # start_logits.requires_grad = True
-                    # end_logits = torch.argmax(outputs[2], dim=1).float()
-                    # end_logits.requires_grad = True
-                    # output2 = loss_1(start_logits, end_logits)
-                    # loss = outputs[0] + lamb * output2
-                    loss = outputs[0]
+                    loss1 = outputs[0]
                     pdb.set_trace();
-                    # one_hot = torch.zeros(outputs[1].shape, dtype=torch.long).to(device)
-                    # for i in range(one_hot.shape[0]):
-                    #     one_hot[i][start_positions[i]] = 1
-                    #     one_hot[i][end_positions[i]] = 1
-                    loss2 = nn.CrossEntropyLoss()
+                    loss_fn = nn.CrossEntropyLoss()
                     avg_position = (start_positions + end_positions) / 2
                     avg_position = avg_position.type(torch.long)
-                    # start_positions = start_positions.squeeze(-1)
-                    # end_positions = end_positions.squeeze(-1)
-                    # ignored_index = outputs[1].size(1)
-                    # start_positions.clamp_(0, ignored_index)
-                    # end_positions.clamp_(0, ignored_index)
-                    outputs2 = loss2(outputs[1]+outputs[2], avg_position)
-                    total_loss = loss + lamb * outputs2
+                    loss2 = loss_fn(outputs[1]+outputs[2], avg_position)
+                    loss = loss1 + lamb * loss2
                     pdb.set_trace();
                     loss.backward()
                     optim.step()
