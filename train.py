@@ -20,7 +20,7 @@ from args import get_train_test_args
 
 from tqdm import tqdm
 
-lamb = 0.25
+lamb = 5e-5
 
 def prepare_eval_data(dataset_dict, tokenizer):
     tokenized_examples = tokenizer(dataset_dict['question'],
@@ -221,11 +221,11 @@ class Trainer():
                                     end_positions=end_positions)
                     # loss = outputs[0]
                     regularization = torch.sum(torch.square(torch.argmax(outputs[1], dim=1) - torch.argmax(outputs[2], dim=1))) / outputs[1].shape[0]
-                    print(outputs[0])
-                    print(outputs[1].shape)
-                    print(torch.argmax(outputs[1], dim=1))
-                    print(torch.argmax(outputs[2], dim=1))
-                    print(regularization)
+                    # print(outputs[0])
+                    # print(outputs[1].shape)
+                    # print(torch.argmax(outputs[1], dim=1))
+                    # print(torch.argmax(outputs[2], dim=1))
+                    # print(regularization)
                     loss = outputs[0] + lamb * regularization
                     loss.backward()
                     optim.step()
