@@ -237,7 +237,7 @@ class Trainer():
                     loss = outputs[0]
                     pdb.set_trace();
                     one_hot = torch.zeros(outputs[1].shape)
-                    for i in range(one_hot_start.shape[0]):
+                    for i in range(one_hot.shape[0]):
                         one_hot[i][start_positions[i]] = 1
                         one_hot[i][end_positions[i]] = 1
                     loss2 = nn.CrossEntropyLoss()
