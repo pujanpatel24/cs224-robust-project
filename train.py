@@ -227,6 +227,7 @@ class Trainer():
                     # print(torch.argmax(outputs[2], dim=1))
                     # print(regularization)
                     loss = outputs[0] + lamb * regularization
+                    pdb.set_trace();
                     loss.backward()
                     optim.step()
                     progress_bar.update(len(input_ids))
