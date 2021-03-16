@@ -227,13 +227,17 @@ class Trainer():
                     # print(torch.argmax(outputs[2], dim=1))
                     # print(regularization)
 
-                    loss_1 = nn.MSELoss()
-                    start_logits = torch.argmax(outputs[1], dim=1).float()
-                    start_logits.requires_grad = True
-                    end_logits = torch.argmax(outputs[2], dim=1).float()
-                    end_logits.requires_grad = True
-                    output2 = loss_1(start_logits, end_logits)
-                    loss = outputs[0] + lamb * output2
+                    # loss_1 = nn.MSELoss()
+                    # start_logits = torch.argmax(outputs[1], dim=1).float()
+                    # start_logits.requires_grad = True
+                    # end_logits = torch.argmax(outputs[2], dim=1).float()
+                    # end_logits.requires_grad = True
+                    # output2 = loss_1(start_logits, end_logits)
+                    # loss = outputs[0] + lamb * output2
+                    loss = outputs[0]
+                    loss2 = nn.CrossEntropyLoss()
+                    outputs2 = loss2(outputs[1]-outputs[2], start_positions-end_positions)
+                    loss += lamb * outputs2
                     pdb.set_trace();
                     loss.backward()
                     optim.step()
