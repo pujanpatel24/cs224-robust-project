@@ -202,12 +202,12 @@ class Trainer():
         #optim = AdamW(model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
         optim = AdamW(
                             [
-                                                {"params": model.distilbert.transformer.layer[0].parameters(), "lr": 1e-5},
-                                                                {"params": model.distilbert.transformer.layer[1].parameters(), "lr": 1e-5},
-                                                                                {"params": model.distilbert.transformer.layer[2].parameters(), "lr": 2e-5},
-                                                                                                {"params": model.distilbert.transformer.layer[3].parameters(), "lr": 2e-5},
-                                                                                                                {"params": model.distilbert.transformer.layer[4].parameters(), "lr": 3e-5},
-                                                                                                                                {"params": model.distilbert.transformer.layer[5].parameters(), "lr": 3e-5},
+                                                {"params": model.distilbert.transformer.layer[0].parameters(), "lr": self.lr},
+                                                                {"params": model.distilbert.transformer.layer[1].parameters(), "lr": self.lr},
+                                                                                {"params": model.distilbert.transformer.layer[2].parameters(), "lr": 2*self.lr},
+                                                                                                {"params": model.distilbert.transformer.layer[3].parameters(), "lr": 2*self.lr},
+                                                                                                                {"params": model.distilbert.transformer.layer[4].parameters(), "lr": 3*self.lr},
+                                                                                                                                {"params": model.distilbert.transformer.layer[5].parameters(), "lr": 3*self.lr},
                                                                                                                                             ],
                                         lr=self.lr, weight_decay=self.weight_decay
                                                 )
@@ -301,12 +301,12 @@ class Trainer():
         #optim = AdamW(model.parameters(), lr=self.lr)
         optim = AdamW(
                             [
-                                                {"params": model.distilbert.transformer.layer[0].parameters(), "lr": 1e-5},
-                                                                {"params": model.distilbert.transformer.layer[1].parameters(), "lr": 1e-5},
-                                                                                {"params": model.distilbert.transformer.layer[2].parameters(), "lr": 2e-5},
-                                                                                                {"params": model.distilbert.transformer.layer[3].parameters(), "lr": 2e-5},
-                                                                                                                {"params": model.distilbert.transformer.layer[4].parameters(), "lr": 3e-5},
-                                                                                                                                {"params": model.distilbert.transformer.layer[5].parameters(), "lr": 3e-5},
+                                                {"params": model.distilbert.transformer.layer[0].parameters(), "lr": self.lr},
+                                                                {"params": model.distilbert.transformer.layer[1].parameters(), "lr": self.lr},
+                                                                                {"params": model.distilbert.transformer.layer[2].parameters(), "lr": 2*self.lr},
+                                                                                                {"params": model.distilbert.transformer.layer[3].parameters(), "lr": 2*self.lr},
+                                                                                                                {"params": model.distilbert.transformer.layer[4].parameters(), "lr": 3*self.lr},
+                                                                                                                                {"params": model.distilbert.transformer.layer[5].parameters(), "lr": 3*self.lr},
                                                                                                                                             ],
                                         lr=self.lr, weight_decay=self.weight_decay
                                                 )
