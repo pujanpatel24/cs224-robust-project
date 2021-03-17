@@ -215,6 +215,7 @@ class Trainer():
         best_scores = {'F1': -1.0, 'EM': -1.0}
         tbx = SummaryWriter(self.save_dir)
         curr_patience = 0
+        prev_f1 = -1
 
         for epoch_num in range(self.num_epochs):
             self.log.info(f'Epoch: {epoch_num}')
@@ -253,12 +254,13 @@ class Trainer():
                         if curr_score['F1'] >= best_scores['F1']:
                             best_scores = curr_score
                             self.save(model)
-                        else:
+                        elif curr_score['F1'] < prev_f1:
                             curr_patience += 1
                         if curr_patience == patience:
                             self.log.info(
                                 f'Hit patience of {patience}. Early stopping at epoch {epoch_num} and step {global_idx}...')
                             return best_scores
+                        prev_f1 = curr_score['F1']
                     global_idx += 1
         return best_scores
 
