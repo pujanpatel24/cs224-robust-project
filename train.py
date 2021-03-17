@@ -460,6 +460,7 @@ def main():
         trainer = Trainer(args, log, tokenizer)
         finetune_dataset, _ = get_dataset(args, 'duorc,race,relation_extraction', 'datasets/oodomain_train', tokenizer,
                                           'train')
+        pdb.set_trace();
         log.info("Preparing Finetuning OOD Data...")
         finetune_val_dataset, finetune_val_dict = get_dataset(args, 'duorc,race,relation_extraction',
                                                               'datasets/oodomain_val', tokenizer, 'val')
