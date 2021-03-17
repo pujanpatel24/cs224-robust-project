@@ -357,11 +357,17 @@ def get_dataset(args, datasets, data_dir, tokenizer, split_name):
                 dataset_dict = util.merge(dataset_dict, aug_dict)
         if split_name == 'val':
             if dataset == 'duorc':
-                dataset_dict = util.merge(dataset_dict, dataset_dict_curr)
-                dataset_dict = util.merge(dataset_dict, dataset_dict_curr)
+                for i in range(2):
+                    copy_dict = dataset_dict_curr.copy()
+                    for j in range(len(copy_dict['id'])):
+                        copy_dict['id'][j] += chr(ord('d') + i)
+                    dataset_dict = util.merge(dataset_dict, copy_dict)
             elif dataset == 'relation_extraction':
                 for i in range(6):
-                    dataset_dict = util.merge(dataset_dict, dataset_dict_curr)
+                    copy_dict = dataset_dict_curr.copy()
+                    for j in range(len(copy_dict['id'])):
+                        copy_dict['id'][j] += chr(ord('c') + i)
+                    dataset_dict = util.merge(dataset_dict, copy_dict)
             # aug_dict = augment_data(dataset_dict_curr)
             # print(f'Augmented {dataset}')
             # print(f"Before merging: {len(dataset_dict['question'])}, with aug_dict of length: {len(aug_dict['question'])}")
