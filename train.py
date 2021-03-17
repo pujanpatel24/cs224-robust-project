@@ -340,9 +340,11 @@ class Trainer():
 
 
 def get_dataset(args, datasets, data_dir, tokenizer, split_name):
+    from copy import deepcopy
     datasets = datasets.split(',')
     dataset_dict = None
     dataset_name = ''
+    pdb.set_trace();
     for dataset in datasets:
         dataset_name += f'_{dataset}'
         dataset_dict_curr = util.read_squad(f'{data_dir}/{dataset}')
@@ -355,16 +357,17 @@ def get_dataset(args, datasets, data_dir, tokenizer, split_name):
             with open(data_dir + '_syn/' + dataset + '.json', 'rb') as f:
                 aug_dict = json.load(f)
                 dataset_dict = util.merge(dataset_dict, aug_dict)
-        if split_name == 'val':
+        if split_name == 'train' or split_name == 'val':
             if dataset == 'duorc':
                 for i in range(2):
-                    copy_dict = dataset_dict_curr.copy()
+                    copy_dict = deepcopy(dataset_dict_curr)
                     for j in range(len(copy_dict['id'])):
                         copy_dict['id'][j] += chr(ord('d') + i)
+                    pdb.set_trace();
                     dataset_dict = util.merge(dataset_dict, copy_dict)
             elif dataset == 'relation_extraction':
                 for i in range(6):
-                    copy_dict = dataset_dict_curr.copy()
+                    copy_dict = deepcopy(dataset_dict_curr)
                     for j in range(len(copy_dict['id'])):
                         copy_dict['id'][j] += chr(ord('c') + i)
                     dataset_dict = util.merge(dataset_dict, copy_dict)
@@ -466,7 +469,6 @@ def main():
         trainer = Trainer(args, log, tokenizer)
         finetune_dataset, _ = get_dataset(args, 'duorc,race,relation_extraction', 'datasets/oodomain_train', tokenizer,
                                           'train')
-        pdb.set_trace();
         log.info("Preparing Finetuning OOD Data...")
         finetune_val_dataset, finetune_val_dict = get_dataset(args, 'duorc,race,relation_extraction',
                                                               'datasets/oodomain_val', tokenizer, 'val')
