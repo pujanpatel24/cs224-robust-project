@@ -346,7 +346,6 @@ def get_dataset(args, datasets, data_dir, tokenizer, split_name):
     datasets = datasets.split(',')
     dataset_dict = None
     dataset_name = ''
-    pdb.set_trace();
     for dataset in datasets:
         dataset_name += f'_{dataset}'
         dataset_dict_curr = util.read_squad(f'{data_dir}/{dataset}')
@@ -377,7 +376,6 @@ def get_dataset(args, datasets, data_dir, tokenizer, split_name):
                 copy_dict = deepcopy(dataset_dict_curr)
                 for j in range(len(copy_dict['id'])):
                     copy_dict['id'][j] += chr(ord('d') + i)
-                # pdb.set_trace();
                 dataset_dict = util.merge(dataset_dict, copy_dict)
             # aug_dict = augment_data(dataset_dict_curr)
             # print(f'Augmented {dataset}')
