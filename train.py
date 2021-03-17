@@ -357,7 +357,7 @@ def get_dataset(args, datasets, data_dir, tokenizer, split_name):
             with open(data_dir + '_back/' + dataset + '.json', 'rb') as f:
                 aug_dict = json.load(f)
                 dataset_dict = util.merge(dataset_dict, aug_dict)
-                for i in range(factor):
+                for i in range(factor // 2):
                     copy_dict = deepcopy(aug_dict)
                     for j in range(len(copy_dict['id'])):
                         copy_dict['id'][j] += chr(ord('m') + i)
@@ -372,7 +372,7 @@ def get_dataset(args, datasets, data_dir, tokenizer, split_name):
                         copy_dict['id'][j] += chr(ord('m') + i)
                     dataset_dict = util.merge(dataset_dict, copy_dict)
         if split_name == 'train' or split_name == 'val':
-            for i in range(factor):
+            for i in range(factor // 2):
                 copy_dict = deepcopy(dataset_dict_curr)
                 for j in range(len(copy_dict['id'])):
                     copy_dict['id'][j] += chr(ord('d') + i)
