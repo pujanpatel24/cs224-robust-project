@@ -11,7 +11,7 @@ from datetime import date
 # key is the argument name expected by main.py
 # value should be a list of options
 GRID_SEARCH = {
-    'batch-size': [8,16],
+    'batch-size': [16, 8],
     'lr': [5e-5, 1e-5, 5e-6, 1e-6, 5e-7],
     'num-epochs': [7],
     'patience': 3,
