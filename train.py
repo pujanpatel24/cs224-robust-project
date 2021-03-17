@@ -215,6 +215,7 @@ class Trainer():
         best_scores = {'F1': -1.0, 'EM': -1.0}
         tbx = SummaryWriter(self.save_dir)
         curr_patience = 0
+        prev_f1 = -1
 
         for epoch_num in range(self.num_epochs):
             self.log.info(f'Epoch: {epoch_num}')
@@ -253,12 +254,13 @@ class Trainer():
                         if curr_score['F1'] >= best_scores['F1']:
                             best_scores = curr_score
                             self.save(model)
-                        else:
+                        elif curr_score['F1'] < prev_f1:
                             curr_patience += 1
                         if curr_patience == patience:
                             self.log.info(
                                 f'Hit patience of {patience}. Early stopping at epoch {epoch_num} and step {global_idx}...')
                             return best_scores
+                        prev_f1 = curr_score['F1']
                     global_idx += 1
         return best_scores
 
@@ -340,6 +342,7 @@ class Trainer():
 
 
 def get_dataset(args, datasets, data_dir, tokenizer, split_name):
+    from copy import deepcopy
     datasets = datasets.split(',')
     dataset_dict = None
     dataset_name = ''
@@ -347,26 +350,39 @@ def get_dataset(args, datasets, data_dir, tokenizer, split_name):
         dataset_name += f'_{dataset}'
         dataset_dict_curr = util.read_squad(f'{data_dir}/{dataset}')
         dataset_dict = util.merge(dataset_dict, dataset_dict_curr)
+        factor = 0
+        if dataset == 'duorc': factor = 2
+        if dataset == 'relation_extraction': factor = 6
         if args.backtranslation and split_name == 'train':
             with open(data_dir + '_back/' + dataset + '.json', 'rb') as f:
                 aug_dict = json.load(f)
                 dataset_dict = util.merge(dataset_dict, aug_dict)
+                for i in range(factor):
+                    copy_dict = deepcopy(aug_dict)
+                    for j in range(len(copy_dict['id'])):
+                        copy_dict['id'][j] += chr(ord('m') + i)
+                    dataset_dict = util.merge(dataset_dict, copy_dict)
         if args.synonym and split_name == 'train':
             with open(data_dir + '_syn/' + dataset + '.json', 'rb') as f:
                 aug_dict = json.load(f)
                 dataset_dict = util.merge(dataset_dict, aug_dict)
-        if split_name == 'val':
-            if dataset == 'duorc':
-                dataset_dict = util.merge(dataset_dict, dataset_dict_curr)
-                dataset_dict = util.merge(dataset_dict, dataset_dict_curr)
-            elif dataset == 'relation_extraction':
-                for i in range(6):
-                    dataset_dict = util.merge(dataset_dict, dataset_dict_curr)
+                for i in range(factor):
+                    copy_dict = deepcopy(aug_dict)
+                    for j in range(len(copy_dict['id'])):
+                        copy_dict['id'][j] += chr(ord('m') + i)
+                    dataset_dict = util.merge(dataset_dict, copy_dict)
+        if split_name == 'train' or split_name == 'val':
+            for i in range(factor):
+                copy_dict = deepcopy(dataset_dict_curr)
+                for j in range(len(copy_dict['id'])):
+                    copy_dict['id'][j] += chr(ord('d') + i)
+                dataset_dict = util.merge(dataset_dict, copy_dict)
             # aug_dict = augment_data(dataset_dict_curr)
             # print(f'Augmented {dataset}')
             # print(f"Before merging: {len(dataset_dict['question'])}, with aug_dict of length: {len(aug_dict['question'])}")
             # dataset_dict = util.merge(dataset_dict, aug_dict)
             # print(f"Post merging: {len(dataset_dict['question'])}")
+    print("This is the length of the set of dataset dict of id", len(set(dataset_dict['id'])))
     data_encodings = read_and_process(args, tokenizer, dataset_dict, data_dir, dataset_name, split_name)
     return util.QADataset(data_encodings, train=(split_name == 'train')), dataset_dict
 
@@ -466,6 +482,7 @@ def main():
         train_loader = DataLoader(finetune_dataset,
                                   batch_size=args.batch_size,
                                   sampler=RandomSampler(finetune_dataset))
+        print("The length of the train loader is : ", len(train_loader))
         val_loader = DataLoader(finetune_val_dataset,
                                 batch_size=args.batch_size,
                                 sampler=SequentialSampler(finetune_val_dataset))
