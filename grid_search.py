@@ -14,8 +14,8 @@ GRID_SEARCH = {
     'batch-size': [16, 8],
     'lr': [5e-5, 1e-5, 5e-6, 1e-6, 5e-7],
     'num-epochs': [7],
-    'patience': 3,
-    'weight-decay:, [1e-2, 1e-1, 0.5], 
+    'patience': 4,
+    'weight-decay': [1e-2, 1e-1, 0.5],
 }
 
 
