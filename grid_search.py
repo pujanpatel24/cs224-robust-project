@@ -11,7 +11,7 @@ from subprocess import call
 # value should be a list of options
 GRID_SEARCH = {
     'batch-size': [16, 8],
-    'lr': [5e-5, 1e-5, 5e-6, 1e-6, 5e-7],
+    'lr': [1e-6, 5e-7],
     'num-epochs': [7],
     'patience': 4,
     'weight-decay': [1e-2, 1e-1, 0.5],
@@ -24,7 +24,7 @@ def main():
             for epochs in GRID_SEARCH['num-epochs']:
                 for wd in GRID_SEARCH['weight-decay']:
                     model_name = "grid_search_bs_{}_lr_{}_wd_{}".format(bs, lr, wd)
-                    cmd = "python train.py --run-name {} --eval-every 50 --model-path {} ".format(model_name, "save/baseline-early-stop-01")
+                    cmd = "python train.py --run-name {} --eval-every 50 --model-path {} ".format(model_name, "save/baseline-early-stop-01/checkpoint")
                     cmd += "--batch-size {} ".format(bs)
                     cmd += "--lr {} ".format(lr)
                     cmd += "--num-epochs {} ".format(epochs)
