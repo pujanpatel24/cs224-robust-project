@@ -25,7 +25,7 @@ def main():
                 for wd in GRID_SEARCH['weight-decay']:
                     for syn in [0, 1]:
                         for bktranslation in [0,1]:
-                            model_name = "DATA_grid_search_bs_{}_lr_{}_wd_{}".format(bs, lr, wd)
+                            model_name = "DATA_grid_search_bs_{}_lr_{}_wd_{}_syn_{}_bktrans_{}".format(bs, lr, wd,syn, bktranslation)
                             cmd = "python train.py --run-name {} --eval-every 50 --model-path {} ".format(model_name, "save/baseline-early-stop-01/checkpoint")
                             cmd += "--batch-size {} ".format(bs)
                             cmd += "--lr {} ".format(lr)
